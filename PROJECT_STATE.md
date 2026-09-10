@@ -4,6 +4,8 @@
 
 `MrHeaven1y.social` is the parent hub for Dibyendu Mukherjee's public work and publishing branches. It should remain a calm, dependency-free directory rather than becoming a second portfolio.
 
+The repository is independent from the portfolio and is deployed at `https://mrheaven1y.github.io/mrheaven1y.social.io/`. The Field Notes publication remains a separate site at `https://mrheaven1y.social.io`.
+
 ## Current branch map
 
 - Portfolio: `https://mrheaven1y.github.io/`

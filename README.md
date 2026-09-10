@@ -5,6 +5,7 @@ The personal social hub for Dibyendu Mukherjee. It is the parent branch for the 
 ## Branch map
 
 - **Portfolio** — live at [mrheaven1y.github.io](https://mrheaven1y.github.io/)
+- **Social hub** — live at [mrheaven1y.github.io/mrheaven1y.social.io](https://mrheaven1y.github.io/mrheaven1y.social.io/)
 - **Field Notes** — live at [mrheaven1y.social.io](https://mrheaven1y.social.io)
 - **LinkedIn** — live at [Dibyendu Mukherjee](https://www.linkedin.com/in/dibayendu-mukherjee-bb897b267)
 - **X / Twitter** — branch reserved for future publishing
