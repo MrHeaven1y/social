@@ -20,7 +20,7 @@
 
 ## Deployment
 
-`.github/workflows/deploy.yml` validates the required static files and deploys the repository root through GitHub Pages on pushes to `main`. Enable **Settings → Pages → GitHub Actions** in the repository if it is not already enabled.
+`.github/workflows/deploy.yml` validates the required static files, checks out the site for the deployment artifact, and deploys the repository root through GitHub Pages on pushes to `main`. It attempts to enable Pages automatically; if repository policy prevents that, enable **Settings → Pages → GitHub Actions** once and rerun the workflow.
 
 ## Continuation rules
 

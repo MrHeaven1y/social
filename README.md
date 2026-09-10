@@ -18,4 +18,4 @@ Telegram is intentionally not linked until a public username or `t.me` URL is su
 
 ## Deployment
 
-The site is a dependency-free static page and deploys through GitHub Pages using `.github/workflows/deploy.yml`. In repository settings, set **Pages → Source** to **GitHub Actions**.
+The site is a dependency-free static page and deploys through GitHub Pages using `.github/workflows/deploy.yml`. The workflow attempts to enable Pages automatically; if repository policy prevents that, set **Settings → Pages → Source** to **GitHub Actions** once, then rerun the workflow.
