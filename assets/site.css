@@ -1,6 +1,10 @@
 :root { --paper:#f5efe5; --ink:#171513; --soft:#5e554d; --espresso:#311d18; --copper:#ca6544; --latte:#c89d7d; --line:rgba(23,21,19,.15); --serif:"DM Serif Display",Georgia,serif; --sans:"DM Sans",Arial,sans-serif; --mono:"DM Mono",Consolas,monospace; }
 * { box-sizing:border-box; }
-html { scroll-behavior:smooth; }
+html { scroll-behavior:smooth; scrollbar-color:var(--copper) transparent; scrollbar-width:thin; }
+html::-webkit-scrollbar { width:12px; height:12px; }
+html::-webkit-scrollbar-track { background:linear-gradient(90deg,transparent 0 35%,rgba(200,157,125,.22) 35% 65%,transparent 65% 100%); }
+html::-webkit-scrollbar-thumb { min-height:56px; border:3px solid var(--paper); border-radius:999px; background:linear-gradient(180deg,var(--copper),var(--latte) 50%,var(--espresso)); box-shadow:inset 0 0 0 1px rgba(245,239,229,.35); }
+html::-webkit-scrollbar-thumb:hover { background:linear-gradient(180deg,var(--espresso),var(--copper) 50%,var(--latte)); }
 body { min-width:320px; margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.5; }
 body::before { position:fixed; z-index:-1; inset:0; content:""; opacity:.38; background-image:linear-gradient(rgba(78,50,37,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(78,50,37,.035) 1px,transparent 1px); background-size:32px 32px; pointer-events:none; }
 a { color:inherit; text-decoration:none; }

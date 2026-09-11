@@ -21,8 +21,13 @@
 .content-hero.compact { padding-bottom:2.5rem; }
 .content-hero h1 { max-width:800px; margin:.8rem 0 1.2rem; }
 .content-lede { max-width:620px; color:var(--soft); font-size:1.05rem; line-height:1.7; }
-.content-search { width:min(100%, 520px); margin-top:2rem; }
-.search-icon { color:var(--copper); font-size:1.1rem; line-height:1; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.content-search { display:flex; align-items:center; gap:.75rem; width:min(100%, 620px); min-height:58px; padding:.35rem .9rem; margin-top:2rem; border:1px solid var(--line); border-left:3px solid var(--copper); background:rgba(255,255,255,.18); transition:border-color .18s ease,box-shadow .18s ease,background .18s ease; }
+.content-search:focus-within { border-color:var(--copper); background:rgba(255,255,255,.42); box-shadow:0 0 0 4px rgba(202,101,68,.12); }
+.search-icon { color:var(--copper); font-size:1.35rem; line-height:1; }
+.content-search input { min-width:0; flex:1; padding:.55rem 0; border:0; outline:0; color:var(--ink); background:transparent; font:500 .78rem var(--mono); letter-spacing:.03em; }
+.content-search input::placeholder { color:var(--soft); opacity:1; }
+.content-search input::-webkit-search-cancel-button { width:1rem; height:1rem; cursor:pointer; opacity:.65; }
 .search-hint { margin-top:.6rem; color:var(--soft); font-family:var(--mono); font-size:.58rem; letter-spacing:.04em; }
 .topic-nav { display:flex; flex-wrap:wrap; gap:.55rem; margin-bottom:4rem; }
 .topic-nav a { padding:.55rem .75rem; border:1px solid var(--line); color:var(--soft); font-family:var(--mono); font-size:.62rem; text-transform:uppercase; }
