@@ -52,7 +52,7 @@ function shell(title, description, body, { stylesheet, script = "", homeLink, li
   <body>
     <header class="site-header">
       <a class="wordmark" href="${homeLink}">DM<span>.</span></a>
-      <nav aria-label="Primary navigation"><a href="${linkedinLink}">LinkedIn</a><a href="${branchesLink}">Platforms</a></nav>
+      <nav aria-label="Primary navigation"><a href="${branchesLink}">Platforms</a></nav>
       <a class="header-action" href="https://t.me/dibayendu_mukherjee" target="_blank" rel="noopener">Message me ↗</a>
     </header>
     ${body}
