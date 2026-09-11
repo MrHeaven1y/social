@@ -1,0 +1,672 @@
+    \documentclass[11pt]{article}
+    
+    % --- UNIVERSAL PREAMBLE BLOCK ---
+    % Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+    \usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+    \usepackage{fontspec}
+    \usepackage[english, bidi=basic, provide=*]{babel}
+    
+    \babelprovide[import, onchar=ids fonts]{english}
+    
+    % Set premium typography using Noto Sans system fonts
+    \babelfont{rm}{Noto Sans}
+    \babelfont{sf}{Noto Sans}
+    \babelfont{tt}{Noto Sans Mono}
+    
+    % --- PACKAGES FOR MODERN DESIGN & MATHS ---
+    \usepackage{amsmath}
+    \usepackage{amssymb}
+    \usepackage{xcolor}
+    \usepackage{graphicx}
+    \usepackage{listings}
+    \usepackage{mdframed}
+    \usepackage{tikz}
+    \usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+    \usepackage{tcolorbox}
+    \tcbuselibrary{listings, skins, breakable}
+    \usepackage{fancyhdr}
+    \usepackage{enumitem}
+    
+    % --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+    \definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+    \definecolor{brandgray}{HTML}{425466}    % Slate Gray
+    \definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+    \definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+    \definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+    \definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+    \definecolor{brandred}{HTML}{E5484D}     % Warning Red
+    
+    % Premium Dark Theme for Code Blocks
+    \definecolor{codebackground}{HTML}{141419}
+    \definecolor{codekeyword}{HTML}{FF7B72}
+    \definecolor{codestring}{HTML}{A5D6FF}
+    \definecolor{codecomment}{HTML}{8B949E}
+    \definecolor{codetext}{HTML}{E6EDF3}
+    \definecolor{codeframe}{HTML}{30363D}
+    
+    % --- ZERO PARAGRAPH INDENT ---
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{1.2em}
+    
+    % Custom TColorBox for styled content blocks
+    \newtcolorbox{infobox}[1][]{
+        colback=brandlight, colframe=brandblue, arc=5pt, boxrule=0.8pt,
+        left=15pt, right=15pt, top=12pt, bottom=12pt, #1
+    }
+    
+    \newtcolorbox{darkbox}[1][]{
+        colback=brandnavy, colframe=brandnavy, arc=5pt, boxrule=0.8pt,
+        left=15pt, right=15pt, top=12pt, bottom=12pt, 
+        coltext=white, #1
+    }
+    
+    % --- HEADER & FOOTER CONFIGURATION ---
+    \pagestyle{fancy}
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0.5pt}
+    
+    \fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{First Principles Deep Dive}}
+    \fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{AI ARCHITECTURE}}
+    
+    \fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+    Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+    \mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+    
+    \fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+    
+    \begin{document}
+    
+    % ==========================================================
+    % SLIDE 1: COVER
+    % ==========================================================
+    \thispagestyle{empty}
+    \vspace*{0.8in}
+    
+    \begin{center}
+    
+        {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{
+        THE MECHANICS OF MEMORY $\cdot$ \quad SEQUENCE MODELS
+        }}
+    
+        \vspace{0.8in}
+    
+        {\fontsize{40}{48}\selectfont\color{brandnavy}\bfseries
+        How does AI\\
+        know what\\
+        to remember?
+        }
+    
+        \vspace{0.6in}
+    
+        {\fontsize{18}{24}\selectfont\color{brandgray}
+        Understanding memory flow, gates, and the\\
+        architecture behind the Gated Recurrent Unit (GRU).
+        }
+    
+        \vfill
+    
+        \begin{minipage}{0.8\textwidth}
+            \centering
+            \rule{0.6\linewidth}{0.5pt}
+    
+            \vspace{0.2in}
+    
+            {\fontsize{12}{14}\selectfont\color{brandnavy}
+            \textbf{Dibayendu Mukherjee}
+            }
+    
+            \vspace{0.05in}
+    
+            {\fontsize{10}{12}\selectfont\color{brandgray}
+            AI Research Engineer \quad $\cdot$ \quad Systems Engineer
+            }
+    
+        \end{minipage}
+    
+    \end{center}
+    
+    \newpage
+    
+    % ==========================================================
+    % SLIDE 2: THE PROBLEM
+    % ==========================================================
+    \vspace*{0.4in}
+    
+    \begin{center}
+    {\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+    The Problem with\\Traditional RNNs}
+    \end{center}
+    
+    \vspace{0.3in}
+    
+    {\large\color{brandgray}
+    In my last post, we explored the shift from LSTMs to Transformers.
+    }
+    
+    \vspace{0.15in}
+    
+    But while building and studying sequence models, I kept returning to a
+    fundamental question:
+    
+    \textbf{Why do simple RNNs struggle to remember the past?}
+    
+    \vspace{0.15in}
+    
+    Traditional RNNs face a major limitation:
+    
+    \textbf{long-term dependencies.}
+    
+    \vspace{0.1in}
+    
+    With every new token, the hidden state is repeatedly updated. 
+    Important information from earlier steps slowly fades as new information arrives.
+    
+    \vspace{0.15in}
+    
+    \begin{darkbox}
+    
+    {\large\textbf{The Realization}}
+    
+    \vspace{0.05in}
+    
+    As sequences become longer, an RNN has no way to decide:
+    
+    \begin{center}
+    \textit{"Should I keep this information, or replace it?"}
+    \end{center}
+    
+    Without a mechanism to control memory flow, useful signals get diluted by noise.
+    
+    \end{darkbox}
+    
+    \vfill
+    \newpage
+    
+    % ==========================================================
+    % SLIDE 3: THE INTUITION
+    % ==========================================================
+    \section*{The Intuition: Reading an Article}
+    
+    \vspace{0.15in}
+    
+    Imagine reading a long article and trying to summarize it.
+    
+    Your brain does not store every word. It creates a compressed memory of what matters.
+    
+    \vspace{0.2in}
+    
+    \begin{minipage}[t]{0.45\textwidth}
+        {\large\color{brandnavy}\textbf{Keep in Memory}}
+    
+        \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandblue}\textbullet}]
+            \item The main idea.
+            \item Important events.
+            \item Meaningful relationships.
+        \end{itemize}
+    
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}
+    
+        {\large\color{brandgray}\textbf{Discard}}
+    
+        \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandorange}\textbullet}]
+            \item Repeated information.
+            \item Irrelevant details.
+            \item Temporary noise.
+        \end{itemize}
+    
+    \end{minipage}
+    
+    \vspace{0.3in}
+    
+    \begin{infobox}
+    
+    A sequence model needs the same ability.
+    
+    At every step, it must decide:
+    
+    \vspace{0.1in}
+    
+    \begin{center}
+    \textbf{"What should I forget?"} \quad
+    \textbf{"What should I keep?"} \quad
+    \textbf{"What new information should I add?"}
+    \end{center}
+    
+    \end{infobox}
+    
+    \vfill
+    \newpage
+    
+    % ==========================================================
+    % SLIDE 4: THE SOLUTION (GRU)
+    % ==========================================================
+    
+    \section*{The Solution: Controlled Memory}
+    
+    \vspace{0.15in}
+    
+    This is exactly why gates were introduced.
+    
+    Enter the \textbf{Gated Recurrent Unit (GRU)}.
+    
+    \vspace{0.01in}
+    
+    A GRU does not force the network to remember everything.
+    
+    Instead, it learns \textbf{when information should flow and when it should stop.}
+    
+    \vspace{0.01in}
+    
+    These learned gates continuously answer:
+    
+    \begin{center}
+    \textit{"Should this information update my memory?"}
+    \end{center}
+    
+    \vspace{0.01in}
+    
+    \begin{center}
+        \includegraphics[width=0.85\textwidth]{gru_architecture.png}
+    \end{center}
+    
+    \vspace{0.2in}
+    
+    Behind this simple diagram are mathematical gates that regulate information flow, allowing the network to preserve important patterns across long sequences.
+    
+    \vfill
+    \newpage
+    
+% ==========================================================
+% SLIDE 5: INSIDE THE GATES
+% ==========================================================
+\section*{Inside the Gates:}
+
+\vspace{0.05in}
+
+\textbf{The Evolution of Memory Control:}
+\begin{itemize}[leftmargin=*, itemsep=0.02in, label={\color{brandblue}\textbullet}]
+    \item \textbf{RNN Problem:} Blindly overwrites memory with every new input.
+    \item \textbf{LSTM Solution:} Introduced gates to protect memory, but added high complexity (two memory states, three gates).
+    \item \textbf{GRU Simplification:} \textit{"Can we keep the same ability but simplify the mechanism?"}
+\end{itemize}
+
+\vspace{0.05in}
+
+Unlike an LSTM which splits memory into a cell state and hidden state, GRU elegantly merges them into a single state ($h_t$), controlled by two core decisions:
+
+\vspace{0.05in}
+
+\begin{minipage}[t]{0.45\textwidth}
+    {\large\color{brandnavy}\textbf{Update Gate ($z_t$)}}
+
+    \textit{"Should I keep the past or replace it?"}
+
+    \vspace{0.02in}
+    Controls the blending of old memory and new information.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    {\large\color{brandnavy}\textbf{Reset Gate ($r_t$)}}
+
+    \textit{"When creating new memory, should I look at history?"}
+
+    \vspace{0.02in}
+    Controls how much past context influences the candidate memory.
+\end{minipage}
+
+\vspace{0.05in}
+
+\begin{center}
+    \includegraphics[width=0.55\textwidth]{gru_equations.png}
+\end{center}
+
+\vspace{0.05in}
+
+\begin{darkbox}
+{\large\textbf{The Mathematical Shift}}
+
+The GRU mathematically simplifies the architecture by combining the roles of an LSTM's forget and input gates into a single update gate ($z_t$). The network \textit{learns} this mixing ratio through gradient descent.
+\end{darkbox}
+
+% ==========================================================
+% SLIDE 6: THE EQUATIONS EXPLAINED
+% ==========================================================
+\section*{Breaking Down the Math}
+
+\vspace{0.05in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+The equations are not just formulas, they are three learned mechanisms that control how information flows through memory.
+}
+
+\vspace{0.15in}
+
+% --- UPDATE GATE ---
+\begin{darkbox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandlight}\textbf{1. Update Gate ($z_t$)}} \quad $z_t=\sigma(W_z[h_{t-1},x_t]+b_z)$
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\textit{"How much of my previous memory should I keep?"} \\
+The GRU creates one vector containing \textbf{old memory + current information}: $[h_{t-1},x_t]$. This passes through a learned transformation and a sigmoid function ($0 \leq z_t \leq 1$), acting as a soft memory controller:
+\begin{itemize}[leftmargin=*, itemsep=0pt, parsep=0pt, topsep=3pt, label={\color{brandlight}\textbullet}]
+    \item $z_t \approx 1 \rightarrow$ \textbf{preserve old memory}
+    \item $z_t \approx 0 \rightarrow$ \textbf{replace with new information}
+\end{itemize}
+}
+\end{darkbox}
+
+\vspace{0.1in}
+
+% --- RESET GATE ---
+\begin{darkbox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandlight}\textbf{2. Reset Gate ($r_t$)}} \quad $r_t=\sigma(W_r[h_{t-1},x_t]+b_r)$
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\textit{"When creating new memory, how much past context should I use?"} \\
+It decides how much previous information should influence the candidate memory by controlling the previous hidden state: $r_t\odot h_{t-1}$. This allows the GRU to forget irrelevant history when forming new memories:
+\begin{itemize}[leftmargin=*, itemsep=0pt, parsep=0pt, topsep=3pt, label={\color{brandlight}\textbullet}]
+    \item $r_t \approx 0 \rightarrow$ \textbf{ignore previous context}
+    \item $r_t \approx 1 \rightarrow$ \textbf{use previous context}
+\end{itemize}
+}
+\end{darkbox}
+
+\vspace{0.1in}
+
+% --- CANDIDATE & BLEND ---
+\begin{infobox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandnavy}\textbf{3. Candidate Memory + Final Hidden State}}
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Candidate Memory ($g_t$):} \\
+$g_t=\tanh(W_g[r_t\odot h_{t-1},x_t]+b_g)$ \\
+\textit{"What new information should I remember?"}
+
+\vspace{0.05in}
+The reset gate filters old memory first. Then the GRU creates a candidate memory by combining \textbf{filtered history + current input}.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Final Blend ($h_t$):} \\
+$h_t=z_t\odot h_{t-1} + (1-z_t)\odot g_t$ \\
+\textit{Linear Interpolation}
+
+\vspace{0.05in}
+The $\odot$ denotes element-wise multiplication. Here, \textbf{$z_t$} is the percentage of old memory to keep, and \textbf{$(1-z_t)$} is the exact remaining percentage used for the new candidate. This perfectly balances past and present, preventing memory from exploding.
+\end{minipage}
+}
+\end{infobox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 7: GRU vs LSTM
+% ==========================================================
+\section*{GRU vs LSTM:\\Choosing the Right Memory}
+
+\vspace{0.05in}
+
+Both GRU and LSTM are designed to preserve long‑term
+dependencies and mitigate the vanishing gradient problem.
+The key difference lies in how they represent and manage memory.
+
+\vspace{0.15in}
+
+% --- Equally distributed table with booktabs ---
+{
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{center}
+\begin{tabular}{@{}p{\dimexpr(\textwidth-24pt)/3\relax}
+                p{\dimexpr(\textwidth-24pt)/3\relax}
+                p{\dimexpr(\textwidth-24pt)/3\relax}@{}}
+\toprule
+\rowcolor{brandlight}
+\textbf{Feature} &
+\color{brandblue}\textbf{LSTM} &
+\color{brandorange}\textbf{GRU} \\
+\midrule
+
+\textbf{Memory Representation} &
+\textbf{Cell State ($C_t$):} Long-term memory
+
+\textbf{Hidden State ($h_t$):} Current working memory &
+\textbf{Hidden State ($h_t$):}
+Stores both long‑term memory and current context \\
+
+\textbf{Memory Structure} &
+Two separate memory streams &
+One unified memory stream \\
+
+\textbf{Memory Control} &
+More explicit and flexible &
+Simplified and efficient \\
+
+\textbf{Gates} &
+Forget, Input, Output &
+Update, Reset \\
+
+\textbf{Parameters} &
+More parameters &
+Fewer parameters \\
+
+\textbf{Training Speed} &
+Usually slower &
+Usually faster \\
+
+\textbf{Data Efficiency} &
+Often benefits from larger datasets &
+Often performs well with smaller datasets \\
+
+\textbf{Performance} &
+Can perform better on complex sequential tasks &
+Often comparable with lower computational cost \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\vspace{0.1in}
+
+% --- Explanation box ---
+\begin{infobox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandnavy}\textbf{Think of it this way:}}
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\begin{itemize}[leftmargin=*, itemsep=0pt, parsep=0pt, topsep=3pt, label={\color{brandnavy}\textbullet}]
+  \item \textbf{LSTM} keeps two memories:
+    \begin{itemize}[leftmargin=*, itemsep=0pt, parsep=0pt, topsep=3pt, label={\color{brandnavy}\textbullet}]
+      \item Cell State ($C_t$): A long‑term notebook storing important information across many time steps.
+      \item Hidden State ($h_t$): A short‑term workspace used to produce the current output.
+    \end{itemize}
+  \item \textbf{GRU} merges both roles into a single Hidden State ($h_t$), making the architecture simpler, faster, and more computationally efficient.
+\end{itemize}
+}
+\end{infobox}
+\newpage
+
+% ==========================================================
+% SLIDE 8: DECISION MAKING
+% ==========================================================
+
+\section*{When to Choose Which?}
+
+\vspace{0.1in}
+
+There is no universally better architecture.
+The right choice depends on the complexity of the task,
+available data, and computational constraints.
+
+\vspace{0.15in}
+
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Choose GRU}}
+
+\vspace{0.05in}
+
+\begin{itemize}[leftmargin=*, itemsep=0.08in,
+label={\color{brandorange}\textbullet}]
+
+\item You want a simpler architecture.
+
+\item Training speed and inference latency are important.
+
+\item Memory or computational resources are limited.
+
+\item The dataset is relatively small.
+
+\item Performance is comparable to LSTM for your task.
+
+\end{itemize}
+
+\vspace{0.08in}
+
+\textbf{Common Applications}
+
+{\small
+IoT forecasting\\
+Speech recognition\\
+Edge AI\\
+Mobile applications
+}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandblue}\textbf{Choose LSTM}}
+
+\vspace{0.05in}
+
+\begin{itemize}[leftmargin=*, itemsep=0.08in,
+label={\color{brandblue}\textbullet}]
+
+\item Very long sequential dependencies must be preserved.
+
+\item Fine-grained control over memory is beneficial.
+
+\item Large datasets are available.
+
+\item Computational cost is less of a concern.
+
+\item Slightly higher model capacity may improve performance.
+
+\end{itemize}
+
+\vspace{0.08in}
+
+\textbf{Common Applications}
+
+{\small
+Financial time-series\\
+Language modeling\\
+Machine translation\\
+Long sequence prediction
+}
+
+\end{minipage}
+
+\vspace{0.2in}
+
+\begin{infobox}
+
+\textbf{Engineering Rule of Thumb}
+
+Start with \textbf{GRU}. If the task involves very long-term
+dependencies or GRU struggles to capture the required context,
+consider switching to \textbf{LSTM}.
+
+\end{infobox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 9: THE BIG TAKEAWAY
+% ==========================================================
+
+\vspace*{0.35in}
+
+\begin{center}
+
+{\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE ENGINEERING TAKEAWAY}}
+
+\vspace{0.3in}
+
+\begin{minipage}{0.88\textwidth}
+\centering
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.2in}
+
+{\fontsize{24}{28}\selectfont\bfseries\color{brandnavy}
+GRU isn't designed to\\
+outperform LSTM.
+}
+
+\vspace{0.15in}
+
+% Now the explanation is set in a clean, readable size — no bold subheading
+{\fontsize{12}{14}\selectfont\color{brandgray}
+It is an elegant simplification.
+
+\vspace{0.1in}
+By merging states and reducing gates, GRU delivers competitive performance
+with significantly less computational overhead.
+
+\vspace{0.1in}
+The real lesson: choosing an architecture isn't about finding the ``best'' model. It's about matching complexity perfectly to your constraints.
+}
+
+\vspace{0.2in}
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\end{minipage}
+
+\end{center}
+
+\vfill
+
+\begin{center}
+
+\rule{0.6\textwidth}{0.5pt}
+
+\vspace{0.12in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Building AI systems by understanding the mathematics,\\
+engineering, and intuition behind every architecture.
+}
+
+\vspace{0.12in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+\begin{tabular}{@{}l l}
+GitHub: & \texttt{github.com/MrHeaven1y} \\
+Portfolio: & \texttt{mrheaven1y.github.io} \\
+LinkedIn: & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+\end{tabular}
+}
+
+\vspace{0.12in}
+
+{\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.2in}
+
+\end{document}

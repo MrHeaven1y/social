@@ -1,0 +1,833 @@
+\documentclass[11pt]{article}
+
+% --- UNIVERSAL PREAMBLE BLOCK ---
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+\usepackage{fontspec}
+\usepackage[english, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using Noto Sans system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+% --- PACKAGES FOR MODERN DESIGN & MATHS ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{graphicx} % Added for external images
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+% --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+\definecolor{brandred}{HTML}{E5484D}     % Warning Red
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419}
+\definecolor{codekeyword}{HTML}{FF7B72}
+\definecolor{codestring}{HTML}{A5D6FF}
+\definecolor{codecomment}{HTML}{8B949E}
+\definecolor{codetext}{HTML}{E6EDF3}
+\definecolor{codeframe}{HTML}{30363D}
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% Custom TColorBox for styled content blocks
+\newtcolorbox{infobox}[1][]{
+    colback=brandlight, colframe=brandblue, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, #1
+}
+
+\newtcolorbox{darkbox}[1][]{
+    colback=brandnavy, colframe=brandnavy, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, 
+    coltext=white, #1
+}
+
+% --- HEADER & FOOTER CONFIGURATION ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{First Principles Deep Dive}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{AI ARCHITECTURE}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.8in}
+\begin{center}
+    
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE EVOLUTION OF AI MEMORY $\cdot$ \quad RNNs TO TRANSFORMERS}}
+    
+    \vspace{0.8in}
+    
+    {\fontsize{40}{48}\selectfont\color{brandnavy}\bfseries AI didn't get smarter.\\It just stopped\\forgetting.}
+    
+    \vspace{0.6in}
+    
+    {\fontsize{18}{24}\selectfont\color{brandgray}
+Every AI architecture solved one problem, and created the next. This is that story.}
+    
+    \vfill
+    
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt} \\
+        \vspace{0.2in}
+        {\fontsize{12}{14}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}} \\
+        \vspace{0.05in}
+        {\fontsize{10}{12}\selectfont\color{brandgray}AI Research Engineer \quad $\cdot$ \quad Systems Engineer}
+    \end{minipage}
+    
+\end{center}
+\newpage
+
+% ==========================================================
+% SLIDE 2: THE PROBLEM
+% ==========================================================
+\vspace*{0.4in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries Why Does AI\\Need Memory?}
+\end{center}
+
+\vspace{0.3in}
+
+{\large\color{brandgray}Read this sentence:}
+
+\vspace{0.2in}
+\begin{center}
+{\fontsize{20}{24}\selectfont\color{brandnavy}\textit{``The cat chased the dog because it was hungry.''}}
+\end{center}
+\vspace{0.2in}
+
+Who is "it"?
+
+Most people answer "the cat" without thinking. 
+
+Because your brain remembers what it read just moments ago.
+
+Early neural networks had no reliable way to connect "it" back to "the cat." To early neural networks, every word looked almost independent from the last.
+
+Without a way to remember previous words, pronouns like "it" became surprisingly difficult.
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{The Real-World Gap}}
+
+
+Whenever order carries meaning, language, speech, music, DNA, or stock prices, the model needs to remember what came before. The obvious question became:
+How do we teach a neural network to remember?
+Because Without memory, it can't understand context. The industry desperately needed a model that could remember the past.
+
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 3: THE FIRST FIX (RNN)
+% ==========================================================
+\section*{The First Attempt:\\Teaching AI to Remember}
+
+\vspace{0.15in}
+
+If forgetting is the problem, how would you solve it?
+
+Think about reading a book.
+
+You don't memorize every word you've read. Instead, your brain keeps a running summary of the story so far.
+
+Engineers borrowed this exact idea when they designed the \textbf{RNN (Recurrent Neural Network)}. 
+
+The word "recurrent" simply means "repeating." The same neural network is reused over and over, once for every word in the sequence.
+
+\vspace{0.15in}
+
+\begin{center}
+\begin{tikzpicture}[
+    >=Stealth, 
+    node distance=1.5cm,
+    box/.style={draw=brandnavy, fill=brandlight, rounded corners=4pt, minimum height=0.8cm, minimum width=2cm, font=\sffamily\small\bfseries},
+    arrow/.style={->, thick, brandgray}
+]
+    \node[box] (w1) {Word 1};
+    \node[box, right=of w1] (w2) {Word 2};
+    \node[box, right=of w2] (w3) {Word 3};
+    
+    \draw[arrow] (w1) -- (w2);
+    \draw[arrow] (w2) -- (w3);
+    
+    \node[font=\sffamily\footnotesize\color{brandblue}, below=0.1cm of w1] {Read};
+    \node[font=\sffamily\footnotesize\color{brandblue}, below=0.1cm of w2] {Remember};
+    \node[font=\sffamily\footnotesize\color{brandblue}, below=0.1cm of w3] {Updated Memory};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.15in}
+
+Instead of reading a sentence all at once, the RNN reads word-by-word. It takes the new word, mixes it with its "running summary" from the previous step, and updates the summary. That updated memory is then passed to the next word.
+
+It was a brilliant fix. For short sentences, it worked remarkably well.
+
+But for long ones... everything started falling apart.
+
+\newpage
+
+% ==========================================================
+% SLIDE 4: THE FLAW (VANISHING GRADIENT)
+% ==========================================================
+\section*{The Flaw: Vanishing Gradients}
+
+\vspace{0.05in}
+
+What if the sentence is 500 words long? The real failure happens under the hood \textit{during training}. 
+
+To learn, the network sends a learning signal (gradient) backward through time. Each step multiplies this signal by a weight matrix. For a 500-word sequence, that's 500 multiplications. Unless perfectly balanced, the signal either shrinks to zero (vanishing) or grows out of control (exploding). This exponential instability makes it mathematically impossible to adjust weights for early words.
+
+\vspace{0.1in}
+
+\begin{center}
+\begin{tikzpicture}[
+    >=Stealth,
+    node distance=1.1cm,
+    box/.style={draw=brandnavy, fill=brandlight, rounded corners=4pt, minimum height=0.6cm, minimum width=1.5cm, font=\sffamily\small\bfseries},
+    arrow/.style={->, thick, brandgray},
+    backarrow/.style={<-, thick, dashed, brandorange}
+]
+    % Nodes
+    \node[box] (w1) {Word 1};
+    \node[box, right=of w1] (w2) {Word 2};
+    \node[box, draw=none, fill=none, right=of w2] (w3) {\dots};
+    \node[box, right=of w3] (w500) {Word 500};
+    
+    % Forward Arrows (The Memory)
+    \draw[arrow] (w1) -- (w2);
+    \draw[arrow] (w2) -- (w3);
+    \draw[arrow] (w3) -- (w500);
+
+    % Gradients Below (The Learning Signal)
+    \node[font=\sffamily\large\bfseries\color{brandred}, below=0.3cm of w1] (g1) {$\approx 0$};
+    \node[font=\sffamily\large\bfseries\color{brandorange}, below=0.3cm of w2] (g2) {0.05};
+    \node[font=\sffamily\large\bfseries\color{brandgreen}, below=0.3cm of w3] (g3) {0.3};
+    \node[font=\sffamily\large\bfseries\color{brandgreen}, below=0.3cm of w500] (g4) {1.0};
+
+    % Backward Arrows (Multiplication)
+    \draw[backarrow] (g1) -- node[below, font=\sffamily\footnotesize\color{brandnavy}]{$\times 0.9$} (g2);
+    \draw[backarrow] (g2) -- node[below, font=\sffamily\footnotesize\color{brandnavy}]{$\times 0.9$} (g3);
+    \draw[backarrow] (g3) -- node[below, font=\sffamily\footnotesize\color{brandnavy}]{$\times 0.9$} (g4);
+    
+    % Labels
+    \node[font=\sffamily\footnotesize\color{brandgray}, above=0.35cm of w3] {Forward Pass: Sequence of Words};
+    \node[font=\sffamily\footnotesize\color{brandorange}, below=1.5cm of w3] {Backward Pass: The Shrinking Learning Signal};
+
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.05in}
+
+If the multiplier is even slightly less than 1, the math is brutal: $0.9^{100} \approx 0.000026$. The gradient becomes practically zero. Imagine whispering a sentence across 300 people, each speaking slightly quieter than the last. Eventually, the final person hears nothing. The RNN's learning signal weakens exactly like this, fading away before it can teach the network that the first word mattered.
+
+\vspace{0.1in}
+
+\begin{darkbox}
+{\large\textbf{The Realization}}
+
+The problem wasn't that the network had memory. The problem was that it couldn't learn how to preserve memories over long sequences because the training signal vanished before reaching earlier words.
+
+To understand long documents, AI needed a mechanism allowing important information to survive hundreds of timesteps.
+\end{darkbox}
+
+\vspace{0.05in}
+\textit{That idea became the Long Short-Term Memory (LSTM) network.}
+
+\newpage
+
+% ==========================================================
+% SLIDE 5: THE SECOND FIX (LSTM)
+% ==========================================================
+\section*{The Second Idea:\\Controlled Memory}
+
+\vspace{0.0in}
+
+The problem was not that RNNs had no memory.
+
+The problem was that important memories could not survive because the learning signal disappeared across long sequences.
+
+The solution:
+
+Give the network a way to \textbf{control memory flow}.
+
+Enter the \textbf{LSTM (Long Short-Term Memory)}.
+
+\vspace{0.01in}
+\rule{\textwidth}{0.5pt}
+\vspace{0.01in}
+
+\textbf{The Core Idea:}
+
+Instead of one fragile memory, LSTM creates a protected memory highway called the \textbf{cell state}.
+
+Think of it as a conveyor belt carrying important information through time.
+
+But unlike a normal conveyor belt, the network has learned gates that decide what passes through.
+
+\vspace{0.01in}
+
+% --- HORIZONTAL LAYOUT FOR GATES TO SAVE SPACE & ADD VISUAL INTEREST ---
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.3cm,
+    gatebox/.style={draw=brandnavy, fill=brandlight, rounded corners=4pt, text width=0.28\textwidth, align=left, inner sep=8pt, font=\sffamily\small}
+]
+    \node[gatebox] (forget) {
+        \textbf{Forget Gate}\\[0.05in]
+        Removes information that is no longer useful.\\[0.01in]
+        \textit{\color{brandgray}"Should this old memory still matter?"}
+    };
+    
+    \node[gatebox, right=of forget] (input) {
+        \textbf{Input Gate}\\[0.05in]
+        Adds new important information.\\[0.01in]
+        \textit{\color{brandgray}"Should this new information be stored?"}
+    };
+    
+    \node[gatebox, right=of input] (output) {
+        \textbf{Output Gate}\\[0.05in]
+        Controls what memory is revealed.\\[0.01in]
+        \textit{\color{brandgray}"What information should influence the current decision?"}
+    };
+\end{tikzpicture}
+\end{center}
+
+% \vspace{0.01in}
+
+\begin{infobox}
+LSTM did not make neural networks remember everything.
+
+It made them learn what deserves to be remembered.
+\end{infobox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 6: LOOKING UNDER THE HOOD (ARCHITECTURE)
+% ==========================================================
+\section*{Looking Under the Hood}
+
+\vspace{0.05in}
+
+Let's map that factory analogy to the actual architecture. 
+
+\vspace{0.05in}
+\begin{center}
+    \includegraphics[width=0.92\textwidth]{LSTM.png}
+\end{center}
+\vspace{0.05in}
+
+The top horizontal line is the \textbf{Cell State}, the protected memory highway. Unlike a normal RNN, this pathway allows information to travel across many time steps with less degradation.
+
+The breakthrough was not just adding gates. LSTM created a protected path for information and gradients to flow through long sequences, becoming the dominant sequence architecture before the rise of attention and transformers.
+
+\newpage
+
+% ==========================================================
+% SLIDE 7: INSIDE THE GATES & EQUATIONS
+% ==========================================================
+\section*{Inside the Gates}
+
+\vspace{0.05in}
+
+The gates are small neural networks that use logistic (sigmoid) functions to create values between 0 and 1:
+
+\vspace{0.05in}
+
+% --- HORIZONTAL CARDS FOR GATES ---
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.25cm,
+    gatebox/.style={draw=brandnavy, fill=brandlight, rounded corners=4pt, text width=0.28\textwidth, align=left, inner sep=6pt, font=\sffamily\small}
+]
+    \node[gatebox] (forget) {
+        \textbf{Forget Gate}\\[0.05in]
+        Decides how much old information should remain.\\[0.03in]
+        \textit{\color{brandgray}Alice $\rightarrow$ Bob context reduced.}
+    };
+    
+    \node[gatebox, right=of forget] (input) {
+        \textbf{Input Gate}\\[0.05in]
+        Decides what new information deserves to be written into long-term memory.
+    };
+    
+    \node[gatebox, right=of input] (output) {
+        \textbf{Output Gate}\\[0.05in]
+        Decides which part of memory should influence the current prediction.
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.02in}
+
+\textbf{The Mathematical Formulation:}
+\begin{align*}
+    \mathbf{f}_{(t)} &= \sigma(\mathbf{W}_{xf}^\top \mathbf{x}_{(t)} + \mathbf{W}_{hf}^\top \mathbf{h}_{(t-1)} + \mathbf{b}_f) \\
+    \mathbf{i}_{(t)} &= \sigma(\mathbf{W}_{xi}^\top \mathbf{x}_{(t)} + \mathbf{W}_{hi}^\top \mathbf{h}_{(t-1)} + \mathbf{b}_i) \\
+    \mathbf{c}_{(t)} &= \mathbf{f}_{(t)} \otimes \mathbf{c}_{(t-1)} + \mathbf{i}_{(t)} \otimes \tanh(\mathbf{W}_{xg}^\top \mathbf{x}_{(t)} + \mathbf{W}_{hg}^\top \mathbf{h}_{(t-1)} + \mathbf{b}_g)
+\end{align*}
+
+\vspace{0.02in}
+{\fontsize{8}{10}\selectfont\color{brandgray}
+\textbf{Note:} $\mathbf{W}$ represents weight matrices, $\mathbf{b}$ bias terms, $\sigma$ the sigmoid gate controller, and $\otimes$ element-wise multiplication.
+}
+
+\newpage
+
+% ==========================================================
+% SLIDE 7: THE WALL (SEQUENTIAL BOTTLENECK)
+% ==========================================================
+\section*{The New Wall: Sequential Processing}
+
+\vspace{0.15in}
+
+Did LSTMs solve everything?
+
+They solved a major problem: keeping important information alive.
+
+But a new limitation appeared.
+
+\textbf{The model still had to read one word at a time.}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{The Sequential Bottleneck}}
+
+An LSTM cannot process word \#100 before finishing word \#99.
+
+\[
+Word_1 \rightarrow Word_2 \rightarrow Word_3 \rightarrow ... \rightarrow Word_{100}
+\]
+
+Each step depends on the previous hidden state.
+
+GPUs are designed for massive parallel computation, but the sequence dependency prevents processing all words simultaneously.
+
+\end{darkbox}
+
+\vspace{0.15in}
+
+Imagine a factory where every worker needs the previous worker's result before starting.
+
+The factory is powerful, but the workflow is forced into a single line.
+
+\vspace{0.15in}
+
+The next question became:
+
+\begin{center}
+\textbf{
+Can AI understand relationships between all words at once?
+}
+\end{center}
+
+This question led to the invention of \textbf{Attention}.
+
+\newpage
+
+
+% ==========================================================
+% SLIDE 8: THE SPARK (ATTENTION)
+% ==========================================================
+\section*{The Spark: Skipping the Line}
+
+\vspace{0.02in}
+
+Humans do not process every word equally. Instead, we naturally focus on the words that matter for understanding the current one. \textit{"The animal didn't cross the road because it was tired."} When we see "it", our brain immediately looks back at "animal". AI borrows this intuition through a mechanism called \textbf{Attention}.
+
+\vspace{0.05in}
+
+\textbf{The New Idea:} Instead of compressing the entire sentence into a single memory vector, keep every word available. Whenever new information is needed, look back directly at the most relevant words.
+
+\vspace{0.05in}
+
+\begin{center}
+\begin{tikzpicture}[
+    >=Stealth, 
+    node distance=0.4cm,
+    word/.style={draw=none, font=\sffamily\small\bfseries\color{brandnavy}},
+    arrow/.style={->, ultra thick, brandblue}
+]
+    \node[word] (w1) {The};
+    \node[word, right=of w1] (w2) {animal};
+    \node[word, right=of w2] (w3) {didn't};
+    \node[word, right=of w3] (w4) {cross};
+    \node[word, right=of w4] (w5) {\dots};
+    \node[word, right=of w5] (w6) {because};
+    \node[word, right=of w6] (w7) {it};
+    
+    \draw[arrow] (w7.south) to[bend left=45] node[below, font=\sffamily\scriptsize\color{brandblue}] {strong attention} (w2.south);
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.05in}
+
+Instead of forcing information to travel step-by-step through every intermediate word, attention lets the model directly connect the current word with the most relevant words, regardless of their distance.
+
+\vspace{0.05in}
+
+The key question is: \textbf{How can a model decide which previous words are important?}
+
+\vspace{0.02in}
+
+\begin{infobox}
+{\large\color{brandblue}\textbf{Attention Scores}}\\[0.05in]
+For every word being predicted, the model assigns a score to every word in the input sentence. Higher scores mean "pay more attention." Lower scores mean "this word is less useful."
+\end{infobox}
+
+\vspace{0.05in}
+
+\begin{center}
+The next question is: \textbf{How are these attention scores actually computed?}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 9: THE MECHANICS (Q, K, V)
+% ==========================================================
+\section*{The Mechanics: Query, Key, Value}
+
+\vspace{0.15in}
+
+To compute an attention score, the AI uses a concept borrowed from database retrieval: \textbf{Query, Key, and Value}.
+
+Imagine you go to a library looking for a book about "Neural Networks."
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{The Library Analogy}}
+
+\begin{itemize}[leftmargin=*, itemsep=0.1in]
+    \item \textbf{Query (Q):} What you are looking for.\\ \textit{("I need a book on Neural Networks.")}
+    \item \textbf{Key (K):} What the library has.\\ \textit{(The title on the spine of every book.)}
+    \item \textbf{Value (V):} The actual content.\\ \textit{(The pages inside the book you ultimately read.)}
+\end{itemize}
+\end{darkbox}
+
+\vspace{0.15in}
+
+In a sentence, every word acts as all three simultaneously!
+
+When predicting the word ``it'':
+\begin{itemize}[leftmargin=*, itemsep=0.1in]
+    \item ``it'' sends out a \textbf{Query}: \textit{"I am a pronoun looking for a noun."}
+    \item Each previous word holds up a \textbf{Key}: \textit{"I am an animal.", "I am a road."}
+    \item The model measures how well the Query matches each Key.
+    \item Based on the strongest matches, the model retrieves the corresponding \textbf{Value}.
+    \item The Value defines how much information from that word should be used.
+\end{itemize}
+
+\newpage
+
+% ==========================================================
+% SLIDE 10: THE MATH (SCALED DOT-PRODUCT)
+% ==========================================================
+\section*{The Math: Scaled Dot-Product}
+
+\vspace{0.15in}
+
+How does the math actually compare a Query and a Key? 
+
+Through a \textbf{Dot Product}. In linear algebra, a dot product measures how similar two vectors are. If the Query ("pronoun looking for noun") and the Key ("animal") point in the same direction, their dot product is a large number.
+
+\vspace{0.15in}
+
+\begin{infobox}
+{\large\color{brandblue}\textbf{The Attention Formula}}
+\[
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\]
+\end{infobox}
+
+\vspace{0.15in}
+
+\textbf{Step-by-step translation:}
+\begin{enumerate}[leftmargin=*, itemsep=0.1in]
+    \item \textbf{$QK^T$}: Compare the Query with every Key through \textbf{matrix multiplication} to produce raw similarity scores.
+    \item \textbf{Divide by $\sqrt{d_k}$}: Scale the scores so they remain numerically stable during training.
+    \item \textbf{softmax}: Convert the raw scores into attention weights (probabilities) that sum to 1.
+          (e.g., 90\% attention to ``animal'', 10\% to ``road'').
+    \item \textbf{Multiply by $V$}: Use those attention weights to compute a weighted combination of the Value vectors.
+    \item \textbf{$Q$, $K$, and $V$}: These are learned projections of the original word embeddings (vector representation of the words). Queries ask, ``What am I looking for?'', Keys answer, ``What information do I contain?'', and Values hold that information. Queries and Keys live in the same vector space so they can be meaningfully compared, while Values are combined according to the resulting attention weights.
+\end{enumerate}
+
+\vspace{0.1in}
+\textit{This math happens instantly, drawing perfect connections across the sentence.}
+
+\newpage
+
+% ==========================================================
+% SLIDE 11: THE PARADIGM SHIFT (TRANSFORMER)
+% ==========================================================
+\section*{The Paradigm Shift: Transformers}
+
+\vspace{0.05in}
+
+Now that we understand how Attention directly connects words, we reach a historical turning point. Initially, attention was introduced as an additional component on top of recurrent networks like LSTMs. Once researchers realized that attention—not recurrence—was responsible for most of the model's ability to capture long-range relationships, they began asking whether recurrence was needed at all. In 2017, the paper \textbf{Attention Is All You Need} proposed a bold question: \textit{Can we remove recurrence completely?}
+
+\vspace{0.05in}
+
+\begin{center}
+    {\fontsize{22}{26}\selectfont\color{brandnavy}\bfseries Remove sequential computation.\\Process all tokens in parallel.}
+\end{center}
+
+\vspace{0.05in}
+
+\textbf{The Cocktail Party Analogy:} In an LSTM, 100 words stand in a line playing telephone. In a Transformer, all 100 words are in the same room. Instead of maintaining a single hidden memory that moves through the sentence, every word now has direct access to every other word. At the exact same second, every word computes how relevant every other word is \textbf{for the current layer}. The word "it" immediately looks back at "animal," instantly connecting across the room.
+
+\vspace{0.02in}
+
+The goal is still the same: understand relationships between words. Only the method has changed. Since every word is processed independently during this step, modern GPUs can compute many attention operations simultaneously. This parallel computation makes Transformers dramatically faster to train on modern GPUs.
+
+\vspace{0.05in}
+
+Removing recurrence solved one problem, but it also introduced a new question: \textbf{If there is no loop anymore, what exactly is happening inside a Transformer block?}
+
+\newpage
+
+% ==========================================================
+% SLIDE 12: HOW IT WORKS (PART 1)
+% ==========================================================
+\section*{How Transformers Actually Work (Part 1)}
+
+\vspace{0.05in}
+
+A Transformer replaces the step-by-step processing of RNNs with a stack of parallel processing blocks.
+
+\vspace{0.05in}
+
+\begin{center}
+    \includegraphics[width=0.75\textwidth]{Transformers.png}
+\end{center}
+
+\vspace{0.05in}
+
+\begin{itemize}[leftmargin=*, itemsep=0.08in]
+
+    \item \textbf{Input Embedding:}  
+    Words are converted into numbers (vectors) that the neural network can understand.  
+    Similar meanings tend to have similar positions in this mathematical space.
+
+    \item \textbf{Positional Encoding:}  
+    Since all words are processed together, the Transformer needs extra information about word order.  
+    Positional encoding tells the model:
+    \begin{center}
+        ``This word is first, this word is second, this word is third...''
+    \end{center}
+    Without it, the model would treat:
+    \textit{"Dog bites man"} and \textit{"Man bites dog"} as the same collection of words.
+
+    \item \textbf{Multi-Head Attention:} The AI calculates attention scores for every word simultaneously. "Multi-Head" means it looks for different types of connections. Different attention heads often learn to capture different kinds of relationships, such as syntax, long-range dependencies, or coreference, although these roles are learned automatically rather than assigned beforehand.
+
+
+\end{itemize}
+
+% ==========================================================
+% SLIDE 12,1: HOW IT WORKS (PART 2)
+% ==========================================================
+\section*{How Transformers Actually Work}
+
+\vspace{0.05in}
+
+After attention connects words together, the Transformer refines this information through repeated layers.
+
+\vspace{0.1in}
+
+\begin{itemize}[leftmargin=*, itemsep=0.1in]
+
+    \item \textbf{Feed Forward Network:}  
+    After attention gathers information from other words, each word representation is independently transformed and refined using a small neural network.
+
+    \item \textbf{Add \& Norm:}  
+    These connections help information flow through many layers.
+    
+    \begin{itemize}
+        \item \textbf{Add (Residual Connection):} Keeps the original information and adds the new learned information.
+        \item \textbf{Normalization:} Keeps values stable so training becomes easier.
+    \end{itemize}
+
+    \item \textbf{Encoder Stack:}  
+    The encoder repeatedly applies attention and transformation to build a deeper understanding of the input sentence.
+
+    \item \textbf{Decoder Stack:}  
+    The decoder uses this understanding to generate output one part at a time, while using masked attention to avoid seeing future words.
+
+\end{itemize}
+
+\vspace{0.1in}
+
+\textbf{The Big Idea:}
+
+\begin{center}
+\textit{Instead of forcing information to travel step-by-step through a chain, Transformers create direct connections between all words and learn which connections matter.}
+\end{center}
+
+% ==========================================================
+% SLIDE 13: THE CATCH (LIMITATIONS)
+% ==========================================================
+\section*{The Catch: Why We Aren't Done}
+
+\vspace{0.05in}
+
+Transformers have a massive memory problem. In self-attention, every word compares itself with every other word to decide which connections matter.
+
+\vspace{0.02in}
+
+\begin{center}
+\[
+\text{Number of comparisons} = n \times n = n^2
+\]
+\end{center}
+
+\vspace{0.02in}
+
+Here, $n$ represents the sequence length (number of words/tokens).
+
+\vspace{0.02in}
+
+\begin{center}
+{\fontsize{12}{14}\selectfont
+\color{brandnavy}\bfseries
+Self-attention complexity: $\mathbf{O(n^2)}$
+}
+\end{center}
+
+\vspace{0.05in}
+
+This means the cost grows quadratically:
+
+\vspace{0.02in}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|c}
+Sequence Length & Attention Comparisons \\ 
+\hline
+1,000 tokens & 1,000,000 comparisons \\
+10,000 tokens & 100,000,000 comparisons
+\end{tabular}
+\end{center}
+\vspace{0.02in}
+
+\begin{center}
+{\fontsize{12}{14}\selectfont\color{brandnavy}\bfseries
+Doubling the sequence length roughly quadruples the computation and memory.
+}
+\end{center}
+
+\vspace{0.05in}
+
+This memory cost grows extremely fast, limiting how much text early Transformers could process at once.
+
+\vspace{0.05in}
+
+\begin{darkbox}
+{\large\textbf{What comes next?}}\\[0.05in]
+To solve this bottleneck, researchers are exploring architectures like State Space Models (SSMs) and Mamba, which aim for closer to linear-time scaling while keeping the ability to model long-range relationships.
+\end{darkbox}
+
+The cycle continues.
+
+\newpage
+
+% ==========================================================
+% SLIDE 14: THE BIG TAKEAWAY & OUTRO
+% ==========================================================
+\vspace*{0.3in}
+\begin{center}
+    
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE BIG TAKEAWAY}}
+    
+    \vspace{0.8in}
+    
+    \begin{minipage}{0.85\textwidth}
+        \centering
+        {\color{brandblue}\rule{6cm}{1pt}}
+        \vspace{0.3in}
+        
+        {\fontsize{24}{30}\selectfont\color{brandnavy}\bfseries
+        Hardware always wins.\\[0.1in]}
+        
+        \vspace{0.15in}
+        
+        {\fontsize{18}{24}\selectfont\color{brandgray}
+        Transformers didn't win because they were simply smarter.
+        They won because they matched the strengths of modern hardware.
+        }
+        
+        \vspace{0.3in}
+        {\color{brandblue}\rule{6cm}{1pt}}
+    \end{minipage}
+    
+\end{center}
+\vfill
+
+\begin{center}
+    \rule{0.6\textwidth}{0.5pt}
+
+    \vspace{0.18in}
+    
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Building AI systems by understanding the architectures behind them.
+}
+
+    \vspace{0.18in}
+
+    % The Links Row (Structured cleanly with alignment)
+{\fontsize{10}{12}\selectfont\color{brandgray}
+\begin{tabular}{@{}l l}
+GitHub:   & \texttt{github.com/MrHeaven1y} \\
+Portfolio:& \texttt{https://mrheaven1y.github.io/} \\
+LinkedIn: & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+\end{tabular}
+}
+
+
+    \vspace{0.15in}
+
+    % The Name
+    {\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.3in} 
+
+\end{document}

@@ -19,12 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate required site files
-        shell: bash
-        run: |
-          test -s index.html
-          test -s assets/site.css
-          test -s assets/app.js
+      - name: Build and validate social content
+        run: npm run check
 
   deploy:
     needs: validate
@@ -34,11 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build social content
+        run: npm run build
+      - name: Assemble Pages artifact
+        run: |
+          mkdir dist
+          cp .nojekyll index.html index.json sitemap.xml feed.xml dist/
+          cp -r assets linkedin tags page portfolio medium x dist/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - id: deployment
         uses: actions/deploy-pages@v4

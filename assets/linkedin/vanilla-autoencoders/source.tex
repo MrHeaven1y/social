@@ -1,0 +1,828 @@
+\documentclass[11pt]{article}
+
+% --- UNIVERSAL PREAMBLE BLOCK ---
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+\usepackage{fontspec}
+\usepackage[english, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+% --- PACKAGES FOR MODERN DESIGN ---
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur, decorations.pathmorphing, calc}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{amsmath}
+
+% --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+\definecolor{brandpurple}{HTML}{8C52FF}  % Accent Purple
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419} % Very dark, sleek background
+\definecolor{codekeyword}{HTML}{FF7B72}    % Soft Red (like GitHub Dark)
+\definecolor{codestring}{HTML}{A5D6FF}     % Soft Blue/Cyan
+\definecolor{codecomment}{HTML}{8B949E}    % Muted Gray
+\definecolor{codetext}{HTML}{E6EDF3}       % Off-white for standard text
+\definecolor{codeframe}{HTML}{30363D}      % Subtle border
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% --- LISTINGS SETUP FOR PRODUCTION CODE ---
+\lstdefinestyle{premiumcode}{
+    backgroundcolor=\color{codebackground},
+    basicstyle=\ttfamily\footnotesize\color{codetext},
+    breakatwhitespace=false,
+    breaklines=true,
+    commentstyle=\color{codecomment}\itshape,
+    keepspaces=true,
+    keywordstyle=\color{codekeyword}\bfseries,
+    morekeywords={async, await, def, class, import, from, return, pass, with, super, for, in, if, else, elif, while, try, except},
+    stringstyle=\color{codestring},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=none,
+    aboveskip=0pt,
+    belowskip=0pt
+}
+
+% Custom TColorBox for Code blocks with padding and titles
+\newtcblisting{codebox}[1][]{
+    listing only,
+    breakable,
+    enhanced,
+    colback=codebackground,
+    colframe=codeframe,
+    boxrule=0.5pt,
+    arc=6pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt,
+    coltitle=codecomment,
+    fonttitle=\sffamily\scriptsize\bfseries,
+    title={#1},
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=codebackground, frame hidden},
+    listing options={style=premiumcode}
+}
+
+% --- HEADER & FOOTER CONFIGURATION ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{Representation Learning}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{EPISODE 01}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.8in}
+\begin{center}
+    
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{REPRESENTATION LEARNING \quad $\cdot$ \quad EPISODE 01}}
+    
+    \vspace{0.8in}
+    
+    {\fontsize{42}{50}\selectfont\color{brandnavy}\bfseries Demystifying\\Vanilla\\Autoencoders}
+    
+    \vspace{0.6in}
+    
+    {\fontsize{18}{24}\selectfont\color{brandgray}From first principles to PyTorch.}
+    
+    \vfill
+    
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt} \\
+        \vspace{0.2in}
+        {\fontsize{12}{14}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}} \\
+        \vspace{0.05in}
+        {\fontsize{10}{12}\selectfont\color{brandgray}AI Research Engineer \quad $\cdot$ \quad Systems Engineer}
+    \end{minipage}
+    
+\end{center}
+\newpage
+
+% ==========================================================
+% SLIDE 2: THE HOOK
+% ==========================================================
+
+\vspace*{1.8in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Hook}
+\end{center}
+
+\vspace{0.4in}
+
+{\Large
+I gave a neural network a 784-number input and forced the whole signal through a 2-number slit.
+}
+
+\vspace{0.3in}
+
+{\Large
+Then I told it to redraw the original input from those two numbers.
+}
+
+\vspace{0.3in}
+
+{\Large
+The result taught me more about data than any supervised model ever did.
+}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 3: THE HIGH-D CURSE
+% ==========================================================
+
+\vspace*{1.0in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Intuition}
+\end{center}
+
+\vspace{0.3in}
+
+Take a $28 \times 28$ handwritten digit (like from the MNIST dataset). 
+
+\vspace{0.2in}
+
+In pixel space, it is represented by 784 numbers. That is a 784-dimensional space. 
+
+\vspace{0.2in}
+
+If you were to pick random coordinates in that 784-dimensional space, you would almost certainly generate pure, TV-static noise. The probability of randomly generating the shape of a "3" is essentially zero.
+
+\vspace{0.2in}
+
+So where does the data live?
+
+\vspace{0.6in}
+
+\begin{tcolorbox}[
+    colback=brandlight,
+    colframe=brandblue,
+    arc=5pt,
+    boxrule=0.8pt,
+    left=15pt, right=15pt, top=15pt, bottom=15pt
+]
+\Large\color{brandnavy}\textbf{Real data is not random.}
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 4: MANIFOLD HYPOTHESIS
+% ==========================================================
+
+\vspace*{0.8in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Manifold Hypothesis}
+\end{center}
+
+\vspace{0.3in}
+
+The shape of a "3" really lives on a thin, curled surface inside that massive 784-dimensional space.
+
+\vspace{0.2in}
+
+Real data rarely fills the space; it sits on a low-dimensional folded surface. This is known as the \textbf{Manifold Hypothesis}.
+
+\vspace{0.2in}
+
+To build intelligent systems, we need to mathematically unroll that surface. If we can compress the 784 dimensions down to the intrinsic dimensions of the manifold, we have successfully extracted the "meaning" of the data.
+
+\vspace{0.4in}
+
+% --- Simple TikZ for a surface ---
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    % Draw a simple curled manifold (Swiss roll-like curve)
+    \draw[thick, brandblue, fill=brandblue!10, opacity=0.8] 
+        (0,0) .. controls (1, 1) and (2, -1) .. (3,0) 
+        -- (3.5, 1.5) .. controls (2.5, 0.5) and (1.5, 2.5) .. (0.5, 1.5) -- cycle;
+    
+    \node[brandnavy, font=\bfseries] at (1.7, 0.7) {The Data Manifold};
+    
+    % Random noise points outside
+    \foreach \i in {1,...,15} {
+        \fill[brandgray] (rnd*4, rnd*2) circle (1pt);
+    }
+    % Data points on manifold
+    \foreach \i in {1,...,15} {
+        \fill[brandorange] (rnd*2.5+0.5, rnd*1+0.5) circle (1.5pt);
+    }
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 5: WHY NOT PCA?
+% ==========================================================
+
+\vspace*{0.8in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries Why Not PCA?}
+\end{center}
+
+\vspace{0.3in}
+
+Classical PCA finds straight axes of maximum variance. For data that lies on a flat sheet, that's fine. But real-world manifolds are rarely flat; think of a Swiss Roll where the data curls through space. 
+
+\vspace{0.2in}
+
+Yes, there are non-linear extensions like Kernel PCA. Those can learn curves by implicitly mapping data into a high-dimensional feature space. But they come with trade-offs: you must guess the right kernel function upfront, and the computation doesn't scale gracefully to massive datasets.
+
+\vspace{0.2in}
+
+Autoencoders take a different path. Instead of a pre-defined mapping, they \textit{learn} the non-linear bending directly from the data. 
+
+\vspace{0.2in}
+
+No kernel to guess, no linear assumption baked in—just a flexible neural network that moulds itself around the manifold. Crucially, the bottleneck also yields a generative direction: you can reconstruct, not just project.
+
+\vspace{0.3in}
+
+\begin{tcolorbox}[
+    colback=brandlight,
+    colframe=brandblue,
+    arc=5pt,
+    boxrule=0.8pt,
+    left=15pt, right=15pt, top=10pt, bottom=10pt
+]
+\color{brandnavy}
+The choice isn't ``PCA bad, AE good.'' It's about what you need: a fast linear map (PCA), a kernel-driven curve (kPCA), or a learned, scalable transformation (Autoencoder).
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 6: THE BOTTLENECK
+% ==========================================================
+
+\vspace*{1.0in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Core Idea: The Bottleneck}
+\end{center}
+
+\vspace{0.3in}
+
+Enter the Autoencoder.
+
+\vspace{0.2in}
+
+The Autoencoder works by starving the network of space. It is exactly like trying to describe a whole painting using only five words.
+
+\vspace{0.2in}
+
+Because you are forced through a restrictive bottleneck, you have to throw away the noise and the background details. You are forced to keep only the absolute most essential structural parts of the image to make sure the listener understands.
+
+\vspace{0.4in}
+
+\begin{tcolorbox}[
+    colback=brandlight,
+    colframe=brandorange,
+    arc=5pt,
+    boxrule=0.8pt,
+    left=15pt, right=15pt, top=15pt, bottom=15pt
+]
+\Large\color{brandnavy}
+The network is \textbf{forced} to learn structure because it \textbf{must} compress to survive the bottleneck.
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 7: ARCHITECTURE DIAGRAM
+% ==========================================================
+
+\vspace*{1.0in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Architecture}
+\end{center}
+
+\vspace{0.2in}
+
+The architecture looks like this—input on the left, a tiny bottleneck in orange in the middle, and the reconstruction on the right.
+
+\vspace{0.4in}
+
+% ---------------- Hourglass Diagram ----------------
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.4in,
+    layer/.style={
+        draw=brandnavy,
+        fill=brandlight,
+        rounded corners=4pt,
+        align=center,
+        font=\sffamily,
+        line width=1.2pt
+    },
+    arrow/.style={
+        -Stealth,
+        brandblue,
+        line width=1.5pt
+    }
+]
+
+% Input
+\node[layer, minimum width=0.6in, minimum height=3.0in] (input) {$x$ \\ (784)};
+% Encoder Hidden
+\node[layer, minimum width=0.6in, minimum height=2.2in, right=of input] (enc1) {(128)};
+% Bottleneck
+\node[layer, minimum width=0.6in, minimum height=0.8in, right=of enc1, fill=brandorange!10, draw=brandorange] (z) {$z$ \\ (2)};
+% Decoder Hidden
+\node[layer, minimum width=0.6in, minimum height=2.2in, right=of z] (dec1) {(128)};
+% Output
+\node[layer, minimum width=0.6in, minimum height=3.0in, right=of dec1] (output) {$\widehat{x}$ \\ (784)};
+
+\draw[arrow] (input) -- (enc1);
+\draw[arrow] (enc1) -- (z);
+\draw[arrow] (z) -- (dec1);
+\draw[arrow] (dec1) -- (output);
+
+\node[above=0.2in of input, font=\bfseries\color{brandnavy}] {Input};
+\node[above=0.2in of enc1, font=\bfseries\color{brandgray}] {Encoder};
+\node[above=0.9in of z, font=\bfseries\color{brandorange}] {Bottleneck};
+\node[above=0.2in of dec1, font=\bfseries\color{brandgray}] {Decoder};
+\node[above=0.2in of output, font=\bfseries\color{brandnavy}] {Reconstruction};
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 8: THE PROBABILISTIC LENS
+% ==========================================================
+
+\vspace*{0.8in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Probabilistic Lens}
+\end{center}
+
+\vspace{0.3in}
+
+The hourglass architecture design isn't accidental. It falls out of a simple generative story: we imagine the data came from a hidden low-dimensional code $z$ (the \textbf{prior}), then passed through some complex process that produced the high-dimensional $x$ (the \textbf{evidence}). 
+
+\vspace{0.2in}
+
+The decoder $p(x|z)$ models how data is generated: given a code $z$, what image $x$ would we expect? \\ 
+But in practice we only see the image $x$. To recover the hidden code, we need the inverse—the \textbf{posterior} $p(z|x)$, which tells us which latent codes could explain the observed data.\\  
+That posterior is mathematically intractable, so we approximate it with the encoder $q(z|x)$.\\
+
+\vspace{0.15in}
+
+That's the whole architecture, in two lines:
+\begin{itemize}[leftmargin=0.45in,itemsep=0.1in]
+    \item \textbf{Encoder} = approximate posterior (compress evidence into a latent code)
+    \item \textbf{Decoder} = likelihood/evidence model (reconstruct evidence from the code)
+\end{itemize}
+
+\vspace{0.15in}
+
+The reconstruction loss is just maximum \textbf{likelihood} under this model—we're maximising how well the evidence is explained by the inferred code. 
+
+\vspace{0.2in}
+
+The hourglass shape? Forced by the fact that we're solving an inverse problem with a bottleneck—exactly the same reasoning that gives us the manifold hypothesis.
+
+\newpage
+
+% ==========================================================
+% SLIDE 9: THE MATH
+% ==========================================================
+
+\vspace*{1.0in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The First Principle}
+\end{center}
+
+\vspace{0.3in}
+
+The math isn't a complex derivation. It's just two non-linear functions and a measurement of failure.
+
+\vspace{0.3in}
+
+{\Large\color{brandnavy}\textbf{1. The Encoder}}
+
+Compresses the input down into the tiny latent code:
+\vspace{-0.15in}
+\[ \mathbf{z = \sigma(W_1x + b_1)} \]
+
+\vspace{0.2in}
+
+{\Large\color{brandnavy}\textbf{2. The Decoder}}
+
+Attempts to expand that tiny code back into the original input:
+\vspace{-0.15in}
+\[ \mathbf{\widehat{x} = \sigma'(W_2z + b_2)} \]
+
+\vspace{0.2in}
+
+{\Large\color{brandnavy}\textbf{3. The Loss}}
+
+We just measure the pixel-wise difference and backpropagate that error. No labels needed.
+\vspace{-0.15in}
+\[ \mathbf{\mathcal{L} = mean(||x - \widehat{x}||^2)} \]
+
+\newpage
+
+% ==========================================================
+% SLIDE 10: THE DECEPTIVE SIMPLICITY
+% ==========================================================
+
+\vspace*{0.5in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Deceptive Simplicity}
+\end{center}
+
+\vspace{0.3in}
+
+At first glance, an autoencoder is just learning the identity function: $f(x) = x$. That would be trivial—a network with enough capacity could simply memorise the input and spit it back unchanged, like a photocopier. Completely useless.
+
+\vspace{0.2in}
+
+The bottleneck changes the game. By forcing the data through a tiny latent code $z$, we break the identity. The network \textit{can't} just copy; it must discard. It must discover the most salient, compressible features that allow reconstruction—the true signal beneath the noise.
+
+\vspace{0.2in}
+
+This is why an undercomplete autoencoder (where $p \ll d$; p = the dimensionality of the bottleneck, d = dimensionality of the input data) is not a bug but deliberately designed. It's a forced abstraction engine.
+
+\vspace{0.2in}
+
+An even more explicit way to prevent identity-copying is the \textbf{denoising autoencoder}: instead of feeding $x$ directly, we feed a corrupted version $\tilde{x} = x + \eta$ (where $\eta$ is noise) and demand the reconstruction of the clean $x$. \\
+The loss becomes $\mathcal{L} = ||x - D(E(\tilde{x}))||^2$. Here, $E(\cdot)$ = Encoder FxN, $D(\cdot)$ = Decoder FxN.\\
+The network can no longer cheat at all; it must truly understand the underlying structure to undo the noise.
+\vspace{0.2in}
+
+\begin{tcolorbox}[
+    colback=brandlight,
+    colframe=brandorange,
+    arc=5pt,
+    boxrule=0.8pt,
+    left=15pt, right=15pt, top=10pt, bottom=10pt
+]
+\color{brandnavy}
+This tiny twist—$f(x + \eta) = x$ instead of $f(x) = x$—turns a copier into a pattern extractor. It's a beautiful, simple principle that makes the whole framework work.
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 11: PYTORCH MODEL
+% ==========================================================
+
+\vspace*{0.2in}
+
+\begin{center}
+{\Large\bfseries Code: The Model Definition}
+\end{center}
+
+\vspace{0.1in}
+
+\begin{codebox}[models/vanilla\_ae.py]
+import torch
+import torch.nn as nn
+
+class VanillaAutoencoder(nn.Module):
+    def __init__(self, input_dim=784, latent_dim=2):
+        super().__init__()
+        
+        # Compress down to the bottleneck
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, latent_dim) # Latent Space 'z'
+        )
+        
+        # Expand back to original dimensions
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 256),
+            nn.ReLU(),
+            nn.Linear(256, input_dim),
+            nn.Sigmoid() 
+        )
+
+    def forward(self, x):
+        # No labels. Just x in, x-hat out.
+        return self.decoder(self.encoder(x))
+\end{codebox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 10: PYTORCH TRAINING LOOP
+% ==========================================================
+
+\vspace*{0.2in}
+
+\begin{center}
+{\Large\bfseries Code: The Training Loop}
+\end{center}
+
+\vspace{0.1in}
+
+Notice how we never provide a `target` or `label` vector. The model learns entirely through self-supervision.
+
+\vspace{0.1in}
+
+\begin{codebox}[train.py]
+import torch.optim as optim
+
+model = VanillaAutoencoder()
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+criterion = nn.MSELoss() # L = mean(||x - x_hat||^2)
+
+# Training loop
+for epoch in range(num_epochs):
+    for batch_features, _ in dataloader:
+        
+        # Flatten image to 784 vector
+        batch_features = batch_features.view(-1, 784)
+        
+        # Forward pass (x -> z -> x_hat)
+        outputs = model(batch_features)
+        
+        # Calculate reconstruction loss (x vs x_hat)
+        loss = criterion(outputs, batch_features)
+        
+        # Backpropagate the error
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+    print(f"Epoch {epoch}, Loss: {loss.item():.4f}")
+\end{codebox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 11: ANOMALY DETECTION THEORY
+% ==========================================================
+
+\vspace*{0.8in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries Where it Hits Reality}
+\end{center}
+
+\vspace{0.3in}
+
+{\Large\color{brandnavy}\textbf{1. Anomaly Detection}}
+
+Train only on normal transactions. Fraud comes along, the reconstruction error spikes—because the model never learned to compress that weird pattern.
+
+\vspace{0.2in}
+
+Set a threshold $\tau$ and you have a detector that never saw a single label.
+
+\vspace{0.4in}
+
+% --- Conceptual Diagram for Anomaly Detection ---
+\begin{center}
+\begin{tikzpicture}[scale=1.0, font=\sffamily]
+    
+    % Axes
+    \draw[->, thick, brandnavy] (0,0) -- (6,0) node[right] {Time};
+    \draw[->, thick, brandnavy] (0,0) -- (0,3) node[above] {Reconstruction Error $\mathcal{L}$};
+    
+    % Threshold line
+    \draw[dashed, thick, brandorange] (0, 1.5) -- (5.5, 1.5) node[right, font=\bfseries] {Threshold $\tau$};
+    
+    % Normal data (low error)
+    \draw[thick, brandblue] (0.5, 0.4) -- (1, 0.7) -- (1.5, 0.5) -- (2, 0.8) -- (2.5, 0.4);
+    
+    % Anomaly (high error)
+    \draw[thick, brandorange, line width=1.5pt] (2.5, 0.4) -- (3.0, 2.6) node[above] {Fraud Spike} -- (3.5, 0.6);
+    
+    % Return to normal
+    \draw[thick, brandblue] (3.5, 0.6) -- (4.0, 0.3) -- (4.5, 0.7) -- (5.0, 0.5);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 12: ANOMALY DETECTION CODE
+% ==========================================================
+
+\vspace*{1.0in}
+
+\begin{center}
+{\Large\bfseries Code: Detecting Anomalies in Production}
+\end{center}
+
+\vspace{0.3in}
+
+At inference time, detecting an anomaly is as simple as running a forward pass and measuring the loss.
+
+\vspace{0.2in}
+
+\begin{codebox}[inference.py]
+def detect_anomaly(transaction_data, model, threshold=0.05):
+    
+    model.eval()
+    with torch.no_grad():
+        
+        # Reconstruct the transaction
+        reconstruction = model(transaction_data)
+        
+        # Calculate Mean Squared Error
+        mse = torch.mean((transaction_data - reconstruction)**2)
+        
+        # If error exceeds our tuned threshold tau
+        if mse.item() > threshold:
+            return True, mse.item()  # Flag as Fraud!
+            
+        return False, mse.item()     # Normal transaction
+\end{codebox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 13: PRE-TRAINING
+% ==========================================================
+
+\vspace*{1.0in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries Unsupervised Pre-training}
+\end{center}
+
+\vspace{0.4in}
+
+{\Large\color{brandnavy}\textbf{2. Feature Extraction}}
+
+Train the encoder on mountains of unlabelled data. Then throw away the decoder and attach a small classifier. 
+
+\vspace{0.2in}
+
+With very few labelled examples, you get a strong feature extractor—it learned what matters without being told.
+
+\vspace{0.6in}
+
+% --- Pretraining Diagram ---
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.5in,
+    layer/.style={
+        draw=brandnavy,
+        fill=brandlight,
+        rounded corners=4pt,
+        align=center,
+        font=\sffamily,
+        line width=1.2pt
+    },
+    arrow/.style={
+        -Stealth,
+        brandblue,
+        line width=1.5pt
+    }
+]
+
+\node[layer, minimum width=0.8in, minimum height=1.5in] (raw) {Raw Data};
+\node[layer, right=of raw, minimum width=0.8in, minimum height=1.0in, draw=brandblue, fill=brandblue!10] (enc) {Pre-trained \\ Encoder};
+\node[layer, right=of enc, minimum width=0.8in, minimum height=0.6in, draw=brandorange, fill=brandorange!10] (head) {Classifier \\ Head};
+\node[right=of head, font=\bfseries\color{brandnavy}] (out) {Predictions};
+
+\draw[arrow] (raw) -- (enc);
+\draw[arrow] (enc) -- (head) node[midway, above, font=\small\color{brandgray}] {$z$};
+\draw[arrow] (head) -- (out);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 14: THE DEEPER PRINCIPLE
+% ==========================================================
+
+\vspace*{1.2in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Deeper Principle}
+\end{center}
+
+\vspace{0.4in}
+
+\begin{center}
+{\Large\color{brandblue}\textbf{\textit{Compression is intelligence.}}}
+\end{center}
+
+\vspace{0.3in}
+
+Not the file-zipping kind. The kind that looks at a thousand noisy examples and extracts the one rule that explains them all.
+
+\vspace{0.2in}
+
+A bottleneck doesn't just reduce dimensions—it forces a model to \textit{understand} what can be thrown away and what must stay. That's not just signal processing. That's the seed of abstraction.
+
+\vspace{0.8in}
+
+\begin{center}
+{\Large\color{brandnavy}\textbf{Forget the layers. Remember the constraint.}}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 15: PREVIEW
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.5in} 
+\begin{center}
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{COMING UP NEXT...}}
+    
+    \vspace{0.2in} 
+    
+    {\fontsize{32}{38}\selectfont\color{brandnavy}\bfseries Variational Autoencoders:\\When the Latent Code Becomes a Probability Distribution}
+    
+    \vspace{0.2in} 
+    
+    \begin{minipage}{0.7\textwidth}
+        \centering
+        \color{brandgray}\fontsize{14}{18}\selectfont
+        Same hourglass, one critical twist: instead of a point, the encoder outputs a distribution. That tiny change makes the latent space smooth, continuous, and generative—you can walk through it and \textit{create} new data.
+    \end{minipage}
+\end{center}
+
+\vfill
+\vspace{0.1in}
+\begin{center}
+    \rule{0.6\textwidth}{0.5pt}
+
+    \vspace{0.18in}
+    
+    {\fontsize{11}{13}\selectfont\color{brandgray}
+    Building production-grade ML, one first-principle at a time.
+    }
+
+    \vspace{0.18in}
+
+    % The Links Row
+    {\fontsize{10}{12}\selectfont\color{brandgray}
+    \faGithub\ \texttt{github.com/MrHeaven1y}
+    \hspace{0.45in}
+    \faLinkedin\ \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+    }
+
+    \vspace{0.15in}
+
+    % The Name
+    {\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.3in} 
+
+\end{document}
+

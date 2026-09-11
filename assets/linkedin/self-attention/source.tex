@@ -1,0 +1,547 @@
+\documentclass[11pt]{article}
+
+% --- UNIVERSAL PREAMBLE BLOCK ---
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+\usepackage{fontspec}
+\usepackage[english, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using Noto Sans system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+% --- PACKAGES FOR MODERN DESIGN & MATHS ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+% --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+\definecolor{brandred}{HTML}{E5484D}     % Warning Red
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419}
+\definecolor{codekeyword}{HTML}{FF7B72}
+\definecolor{codestring}{HTML}{A5D6FF}
+\definecolor{codecomment}{HTML}{8B949E}
+\definecolor{codetext}{HTML}{E6EDF3}
+\definecolor{codeframe}{HTML}{30363D}
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% Custom TColorBox for styled content blocks
+\newtcolorbox{infobox}[1][]{
+    colback=brandlight, colframe=brandblue, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, #1
+}
+
+\newtcolorbox{darkbox}[1][]{
+    colback=brandnavy, colframe=brandnavy, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, 
+    coltext=white, #1
+}
+
+% --- HEADER & FOOTER CONFIGURATION ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{First Principles Deep Dive}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{AI ARCHITECTURE}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.8in}
+
+\begin{center}
+
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{
+    THE FULL TRANSFORMER ARCHITECTURE
+    }}
+
+    \vspace{0.8in}
+
+    {\fontsize{40}{48}\selectfont\color{brandnavy}\bfseries
+    How does AI\\
+    understand\\
+    true meaning?
+    }
+
+    \vspace{0.6in}
+
+    {\fontsize{18}{24}\selectfont\color{brandgray}
+    Self-Attention, Multi-Head Spaces,\\
+    Cross-Attention, and GPU Tradeoffs.
+    }
+
+    \vfill
+
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt}
+
+        \vspace{0.2in}
+
+        {\fontsize{12}{14}\selectfont\color{brandnavy}
+        \textbf{Dibayendu Mukherjee}
+        }
+
+        \vspace{0.05in}
+
+        {\fontsize{10}{12}\selectfont\color{brandgray}
+        AI Research Engineer \quad $\cdot$ \quad Systems Engineer
+        }
+
+    \end{minipage}
+
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 2: THE PROBLEM
+% ==========================================================
+\vspace*{0.4in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+The Sequential Bottleneck}
+\end{center}
+
+\vspace{0.3in}
+
+{\large\color{brandgray}
+Before Transformers, NLP relied heavily on recurrent models (RNNs/LSTMs).
+}
+
+\vspace{0.15in}
+
+But reading word-by-word introduced two massive flaws:
+
+\textbf{1. Memory Degradation:} By the end of a long sentence, the network often forgot the beginning.
+
+\textbf{2. The Hardware Bottleneck:} Token $N$ had to wait for Token $N-1$ to finish processing. 
+
+\vspace{0.15in}
+
+\begin{darkbox}
+
+{\large\textbf{The Realization}}
+
+\vspace{0.05in}
+
+As long as we processed sequences one step at a time, we could never fully utilize the massive parallel computing power of modern GPUs.
+
+\begin{center}
+\textit{We needed a way to process everything at once.}
+\end{center}
+
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 3: THE INTUITION
+% ==========================================================
+\section*{The Intuition: The Cocktail Party}
+
+\vspace{0.15in}
+
+Imagine you are at a crowded cocktail party and you overhear the word \textbf{"apple"}.
+
+Are they talking about the fruit or the tech company?
+
+\vspace{0.2in}
+
+Your brain doesn't read the conversation sequentially to figure it out. It instantly scans the surrounding words for context clues.
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.45\textwidth}
+    {\large\color{brandblue}\textbf{Context A: Technology}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandblue}\textbullet}]
+        \item ``Silicon''
+        \item ``Macbook''
+        \item ``Steve Jobs''
+    \end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+
+    {\large\color{brandorange}\textbf{Context B: Fruit}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandorange}\textbullet}]
+        \item ``Pie''
+        \item ``Orchard''
+        \item ``Crisp''
+    \end{itemize}
+
+\end{minipage}
+
+\vspace{0.3in}
+
+\begin{infobox}
+
+This is exactly how \textbf{Self-Attention} works. 
+
+Instead of reading left-to-right, every single word looks at every other word in the sentence simultaneously, asking:
+
+\begin{center}
+\textbf{"Which of these words modifies my meaning?"}
+\end{center}
+
+\end{infobox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 4: THE SOLUTION (Q, K, V)
+% ==========================================================
+
+\section*{The Mechanism: Q, K, and V}
+
+\vspace{0.15in}
+
+To achieve this, the Self-Attention mechanism maps every word into three distinct vectors:
+
+\vspace{0.15in}
+
+\begin{darkbox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandlight}\textbf{1. The Query (Q)}}
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\textit{"What am I looking for?"} \\
+This represents the current word that is trying to gather context from the rest of the sentence.
+}
+\end{darkbox}
+
+\vspace{0.1in}
+
+\begin{darkbox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandlight}\textbf{2. The Key (K)}}
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\textit{"What do I have?"} \\
+This represents the information or "tags" that every other word is holding. The network checks if a Key matches the Query.
+}
+\end{darkbox}
+
+\vspace{0.1in}
+
+\begin{darkbox}[top=8pt, bottom=8pt, left=12pt, right=12pt]
+{\large\color{brandlight}\textbf{3. The Value (V)}}
+
+\vspace{0.05in}
+{\fontsize{10}{12}\selectfont
+\textit{"What is my actual meaning?"} \\
+If a Query and a Key match well, the network pulls in this Value to update the original word's context.
+}
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 5: THE MATH
+% ==========================================================
+\section*{Breaking Down the Math}
+
+\vspace{0.05in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+It looks intimidating, but it is just a remarkably elegant way to compute relationships.
+}
+
+\vspace{0.15in}
+
+\begin{center}
+{\Large $\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$}
+\end{center}
+
+\vspace{0.15in}
+
+\begin{itemize}[leftmargin=*, itemsep=0.15in, label={\color{brandblue}\textbullet}]
+    \item \textbf{$QK^T$ (Dot Product):} We multiply the Queries by the Keys. The dot product measures \textit{similarity}. If word A is highly relevant to word B, this score explodes.
+    \item \textbf{$\sqrt{d_k}$ (Scaling):} We divide by the square root of the dimension size to keep the gradients stable during backpropagation.
+    \item \textbf{softmax:} This converts the raw scores into percentages (weights that sum to 1). Now we know exactly how much "attention" word A should pay to word B.
+    \item \textbf{$\times V$ (The Update):} We multiply those percentages by the actual Values, creating a new, rich, context-aware representation of our word.
+    \item \textbf{Spaces of $Q$, $K$, and $V$:} 
+         $Q$ and $K$ are projected into the \textit{same vector space}, so their dot product is meaningful — it measures alignment between "what I’m looking for" (Query) and "what I contain" (Key).  
+        $V$ lives in the \textit{embedding space}, carrying the semantic content of the words. The attention weights (from $QK^T$) decide how much of each Value contributes to the final representation.
+\end{itemize}
+
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 6: MULTI-HEAD ATTENTION
+% ==========================================================
+
+\section*{Multi-Head Attention}
+
+\vspace{0.1in}
+
+Why stop at a single perspective? 
+
+Instead of one attention function, Transformers project Q, K, and V into \textbf{multiple lower-dimensional subspaces}.
+
+\vspace{0.15in}
+
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{The Theory}}
+
+\vspace{0.05in}
+We say that multiple heads allow the model to capture different relationships (syntactic vs semantic vs positional) simultaneously.
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandblue}\textbf{The Reality}}
+
+\vspace{0.05in}
+The model is never explicitly told to split the work! It just discovers these specializations organically through gradient descent.
+
+\end{minipage}
+
+\vspace{0.2in}
+
+\begin{infobox}
+
+\textbf{An Emergent Property}
+
+Separate parameter subspaces naturally increase representational capacity. We didn't hand-engineer syntactic rules into the heads; the network learned that specializing was the most efficient way to minimize the loss function.
+
+\vspace{0.15in}
+
+\textbf{Example:}  
+- One head might learn that \textit{“eat”} (verb) strongly attends to \textit{“apple”} (noun), capturing syntactic structure.  
+- Another head might focus on semantic roles, linking \textit{“dog”} with \textit{“bark”}.  
+- Yet another head could emphasize positional context, such as connecting \textit{“yesterday”} with the verb tense.
+
+These heads are not manually assigned — the model discovers these verb–noun and semantic relationships organically.
+\end{infobox}
+
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 7: CROSS-ATTENTION
+% ==========================================================
+
+\section*{The Decoder's Magic:\\Cross-Attention}
+
+\vspace{0.1in}
+
+While self-attention looks inward, cross-attention looks outward. It is the bridge between the Encoder and the Decoder. 
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{Self-Attention:} \textit{"What in my own past should I pay attention to?"}
+
+\vspace{0.05in}
+\textbf{Cross-Attention:} \textit{"What in the external context should I incorporate?"}
+\end{darkbox}
+
+\vspace{0.15in}
+
+In the Decoder, the \textbf{Queries} come from the target sequence (the words we are generating).
+
+But the \textbf{Keys} and \textbf{Values} come directly from the Encoder's final output (the source sentence). 
+
+{\small (Recall: the \textbf{Encoder} compresses the source input into a rich representation, while the \textbf{Decoder} expands that representation into the target output. Source: Previous AE Post.)}
+
+\vspace{0.15in}
+
+Every single token generated dynamically asks the entire source sentence: \textbf{"Which part of you is relevant to what I'm trying to say next?"} This creates a differentiable, dynamic alignment that powers modern translation.
+
+\vspace{0.15in}
+
+\textbf{Example:}  
+Suppose the source sentence (Encoder input) is: \textit{"Le chat dort"} (French).  
+- The Decoder is trying to generate the English translation.  
+- When predicting the word \textit{"cat"}, the Query comes from the partially generated target sequence.  
+- The Keys and Values come from the Encoder’s representation of \textit{"Le chat dort"}.  
+- Cross-attention aligns the Query with the Encoder’s output, discovering that \textit{"chat"} is the most relevant part.  
+- This dynamic alignment ensures the Decoder picks the correct word \textit{"cat"} in context.
+
+
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 8: THE ENGINEERING TRADEOFF
+% ==========================================================
+
+\section*{The Engineering Genius}
+
+\vspace{0.1in}
+
+The brilliance of the "Attention Is All You Need" paper wasn't just linguistic. It was an engineering masterclass.
+
+\vspace{0.15in}
+
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{The Cost}}
+
+\vspace{0.05in}
+
+Memory complexity became $O(N^2)$. 
+
+Because every word compares itself to every other word, doubling the sentence length quadruples the memory required. 
+
+This is why LLMs struggle with infinite context windows.
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandblue}\textbf{The Reward}}
+
+\vspace{0.05in}
+
+Complete Parallelization.
+
+There are no sequential loops. The entire computation is just massive matrix multiplication happening across thousands of GPU cores simultaneously.
+
+\end{minipage}
+
+\vspace{0.2in}
+
+\begin{infobox}
+
+\textbf{The Real Breakthrough}
+
+By shifting the bottleneck from sequential processing to memory bandwidth, transformers unlocked the ability to train on terabytes of data in parallel. 
+
+They traded algorithmic elegance for hardware utilization.
+
+\vspace{0.15in}
+
+\textbf{Example:}  
+- Imagine a sentence with 1,000 words.  
+- Self-attention requires each word to compare itself with all 999 others, about 1,000,000 comparisons ($N^2$).  
+- That’s the \textbf{cost}: memory usage explodes as sequence length grows.  
+- But the \textbf{reward}: all those comparisons can be done at once using GPU matrix multiplication. Instead of whispering word-by-word like an RNN, it’s like blasting the whole sentence through thousands of speakers simultaneously.  
+\end{infobox}
+
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 9: THE BIG TAKEAWAY
+% ==========================================================
+
+\vspace*{0.35in}
+
+\begin{center}
+
+{\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE ENGINEERING TAKEAWAY}}
+
+\vspace{0.3in}
+
+\begin{minipage}{0.88\textwidth}
+\centering
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.2in}
+
+{\fontsize{24}{28}\selectfont\bfseries\color{brandnavy}
+Sometimes the best algorithm\\
+isn't the one that is theoretically\\
+optimal.
+}
+
+\vspace{0.15in}
+
+{\fontsize{12}{14}\selectfont\color{brandgray}
+It is the one that best exploits the underlying hardware.
+
+\vspace{0.1in}
+The biggest leaps in AI didn't come from forcing networks to read better. They came from restructuring the math so GPUs could compute it faster.
+}
+
+\vspace{0.2in}
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\end{minipage}
+
+\end{center}
+
+\vfill
+
+\begin{center}
+
+\rule{0.6\textwidth}{0.5pt}
+
+\vspace{0.12in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Building AI systems by understanding the mathematics,\\
+engineering, and intuition behind every architecture.
+}
+
+\vspace{0.12in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+\begin{tabular}{@{}l l}
+GitHub: & \texttt{github.com/MrHeaven1y} \\
+Portfolio: & \texttt{mrheaven1y.github.io} \\
+LinkedIn: & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+\end{tabular}
+}
+
+\vspace{0.12in}
+
+{\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.2in}
+
+\end{document}

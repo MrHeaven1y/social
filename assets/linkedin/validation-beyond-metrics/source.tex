@@ -1,0 +1,577 @@
+\documentclass[11pt]{article}
+
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+
+\usepackage{fontspec}
+\usepackage[english, bidi=bidi, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using Noto Sans system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+% --- PACKAGES FOR MODERN DESIGN & MATHS ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+% --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+\definecolor{brandred}{HTML}{E5484D}     % Warning Red
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419}
+\definecolor{codekeyword}{HTML}{FF7B72}
+\definecolor{codestring}{HTML}{A5D6FF}
+\definecolor{codecomment}{HTML}{8B949E}
+\definecolor{codetext}{HTML}{E6EDF3}
+\definecolor{codeframe}{HTML}{30363D}
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% Custom TColorBox for styled content blocks
+\newtcolorbox{infobox}[1][]{
+    colback=brandlight, colframe=brandblue, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, #1
+}
+
+\newtcolorbox{darkbox}[1][]{
+    colback=brandnavy, colframe=brandnavy, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, 
+    coltext=white, #1
+}
+
+% Custom TColorBox for Syntax Highlighted Code
+\newtcblisting{codebox}[2][]{
+    colback=codebackground, colframe=codeframe, arc=5pt, boxrule=1pt,
+    left=10pt, right=10pt, top=10pt, bottom=10pt,
+    listing only, listing options={
+        basicstyle=\ttfamily\footnotesize\color{codetext},
+        keywordstyle=\color{codekeyword}\bfseries,
+        stringstyle=\color{codestring},
+        commentstyle=\color{codecomment}\itshape,
+        showstringspaces=false,
+        breaklines=true,
+        language=#2
+    },
+    #1
+}
+
+% --- HEADER & FOOTER CONFIGURATION ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{MLOps Deep Dive}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{VALIDATION DRIFT}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.3in}
+
+\begin{center}
+
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{
+    EVALUATION \& VALIDATION
+    }}
+
+    \vspace{0.5in}
+
+    {\fontsize{40}{48}\selectfont\color{brandnavy}\bfseries
+Why your training loss\\[0.15in]
+looks great but your\\[0.25in]
+model still fails\\[0.15in]
+in production.
+}
+
+    \vspace{0.6in}
+
+    {\fontsize{18}{24}\selectfont\color{brandgray}
+    The silent gap between validation\\
+    metrics and real-world performance.
+    }
+
+    \vfill
+
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt}
+
+        \vspace{0.2in}
+
+        {\fontsize{12}{14}\selectfont\color{brandnavy}
+        \textbf{Dibayendu Mukherjee}
+        }
+
+        \vspace{0.05in}
+
+        {\fontsize{10}{12}\selectfont\color{brandgray}
+        AI Research Engineer \quad $\cdot$ \quad Systems Engineer
+        }
+
+    \end{minipage}
+
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 2: THE ILLUSION OF SUCCESS
+% ==========================================================
+\vspace*{0.4in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+The Illusion of Success}
+\end{center}
+
+\vspace{0.3in}
+
+{\large\color{brandgray}
+Everything looked perfect on paper.
+}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{What I Saw}}
+
+\vspace{0.05in}
+\begin{itemize}[leftmargin=*, itemsep=0.08in, label={\color{brandblue}\textbullet}]
+    \item 98\% validation accuracy.
+    \item Smoothly decreasing training and validation loss.
+    \item No signs of overfitting.
+    \item Model deployed with confidence.
+\end{itemize}
+\end{darkbox}
+
+\vspace{0.2in}
+
+In production, the model failed on the most important users and edge cases. The metrics I trusted were not measuring what actually mattered.
+
+\vspace{0.15in}
+
+\begin{infobox}
+\textbf{The Fatal Assumption:}\\
+I assumed a high validation score guaranteed real-world performance. It didn't.
+\end{infobox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 3: THE MISTAKE
+% ==========================================================
+\section*{The Mistake}
+
+\vspace{0.15in}
+
+My biggest error was treating validation as a box-ticking exercise instead of a rigorous simulation of production.
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.45\textwidth}
+    {\large\color{brandred}\textbf{What I Did}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandred}\textbullet}]
+        \item Relied on a random train/test split.
+        \item Used accuracy as the only metric.
+        \item Normalized on the full dataset before splitting.
+        \item Assumed past data represents future.
+    \end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+
+    {\large\color{brandgreen}\textbf{What I Should Have Done}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandgreen}\textbullet}]
+        \item Time-based split for temporal data.
+        \item Business-aligned metrics (precision/recall, F-beta).
+        \item Fit scalers only on training split.
+        \item Implement drift detection and periodic retraining.
+    \end{itemize}
+
+\end{minipage}
+
+\vspace{0.3in}
+
+\begin{darkbox}
+
+{\large\textbf{The Reality Check}}
+
+\vspace{0.05in}
+
+The model wasn't wrong – it was evaluated on a lie. The validation set leaked information and ignored the real distribution.
+
+\end{darkbox}
+
+\vfill
+\newpage
+% ==========================================================
+% SLIDE 4: HOW IT SHOWED UP (SINGLE PAGE)
+% ==========================================================
+
+\section*{How It Showed Up}
+
+\vspace{0.08in}
+
+{\small No crashes. No exceptions. Just three silent failures that made the model confidently wrong.}
+
+\vspace{0.12in}
+
+% --- FAILURE 1: DATA LEAKAGE ---
+\begin{infobox}[top=6pt, bottom=6pt, left=12pt, right=12pt]
+{\normalsize\color{brandblue}\textbf{1. Data Leakage}} \hfill {\footnotesize\color{brandorange}\textit{The model saw the test.}}
+
+\vspace{0.04in}
+{\footnotesize\textbf{Punchline:} Scaling before split $=$ test statistics leaked into training.}
+
+\vspace{0.03in}
+{\footnotesize\color{brandgray}\textit{Example: \texttt{scaler.fit(X\_all)} instead of \texttt{scaler.fit(X\_train)} — the model memorized answers instead of learning patterns.}}
+
+\vspace{0.03in}
+{\footnotesize\color{brandred}\textbf{Human fix:} Verify every preprocessing step respects the train/test boundary.}
+\end{infobox}
+
+\vspace{0.08in}
+
+% --- FAILURE 2: EVALUATION GAP ---
+\begin{infobox}[top=6pt, bottom=6pt, left=12pt, right=12pt]
+{\normalsize\color{brandblue}\textbf{2. Evaluation Gap}} \hfill {\footnotesize\color{brandorange}\textit{Accuracy $\neq$ truth.}}
+
+\vspace{0.04in}
+{\footnotesize\textbf{Punchline:} 98\% accuracy meant nothing when the model missed 95\% of the rare, high-value class.}
+
+\vspace{0.03in}
+{\footnotesize\color{brandgray}\textit{Example: 0\% recall on fraud detection — the model just predicted ``not fraud'' every time.}}
+
+\vspace{0.03in}
+{\footnotesize\color{brandred}\textbf{Human fix:} Let domain experts define what ``good'' means before training begins.}
+\end{infobox}
+
+\vspace{0.08in}
+
+% --- FAILURE 3: SILENT DRIFT ---
+\begin{infobox}[top=6pt, bottom=6pt, left=12pt, right=12pt]
+{\normalsize\color{brandblue}\textbf{3. Silent Drift}} \hfill {\footnotesize\color{brandorange}\textit{Yesterday's data $\neq$ today's world.}}
+
+\vspace{0.04in}
+{\footnotesize\textbf{Punchline:} User behavior changed, but the validation set stayed frozen in the past.}
+
+\vspace{0.03in}
+{\footnotesize\color{brandgray}\textit{Example: Pre-pandemic shopping habits became irrelevant after lockdowns — but the model kept serving stale recommendations.}}
+
+\vspace{0.03in}
+{\footnotesize\color{brandred}\textbf{Human fix:} Monitor for drift and decide when the world has changed enough to retrain.}
+\end{infobox}
+
+\vspace{0.1in}
+
+% --- CLOSING KICKER ---
+\begin{darkbox}[top=6pt, bottom=6pt, left=12pt, right=12pt]
+{\normalsize\textbf{The Real Danger}}
+
+\vspace{0.03in}
+{\footnotesize AI doesn't crash — it convinces you it's right. Silent failures prove why AI needs human guardrails at every stage.}
+\end{darkbox}
+
+\vfill
+\newpage
+
+
+% ==========================================================
+% SLIDE 5: ROOT CAUSE ANALYSIS
+% ==========================================================
+\section*{Root Cause Analysis}
+
+\vspace{0.05in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+The failure was a compounding of technical shortcuts and missing process controls.
+}
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Technical Causes}}
+
+\vspace{0.1in}
+\begin{itemize}[leftmargin=*, itemsep=0.15in, label={\color{brandblue}\textbullet}]
+    \item \textbf{Preprocessing before split} $\rightarrow$ Data leakage (Slide 4.1)
+    \item \textbf{Metric misalignment} $\rightarrow$ Evaluation gap (Slide 4.2)
+    \item \textbf{No temporal awareness} $\rightarrow$ Silent drift (Slide 4.3)
+    \item \textbf{No monitoring} $\rightarrow$ All three undetected
+\end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Process Causes}}
+
+\vspace{0.1in}
+\begin{itemize}[leftmargin=*, itemsep=0.15in, label={\color{brandblue}\textbullet}]
+    \item \textbf{No domain expert review} – metrics didn't reflect business priorities.
+    \item \textbf{Validation not simulating production} – missing real data distribution.
+    \item \textbf{No A/B testing} – no safe rollout to catch failures.
+    \item \textbf{No feedback loop} – user complaints never reached the model team.
+\end{itemize}
+
+\end{minipage}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 6: WHAT I CHANGED
+% ==========================================================
+
+\section*{What I Changed}
+
+\vspace{0.1in}
+
+Three practical changes turned validation from a vanity metric into a trustworthy gate.
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{1. Leakage-proof preprocessing}
+
+Fit scalers, encoders, and imputers \textit{only} on the training split. Use \texttt{sklearn.pipeline.Pipeline} to bundle all steps.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{2. Business-aligned metrics}
+
+Replace accuracy with precision, recall, F-beta, or expected value. Choose the metric that reflects the cost of being wrong.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{3. Continuous validation \& drift detection}
+
+Set up periodic evaluation on fresh data, monitor feature distributions, and retrain when drift exceeds a threshold.
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 7: THE IMPLEMENTATION
+% ==========================================================
+
+\section*{The Implementation}
+
+\vspace{0.1in}
+
+These snippets show the core changes that prevent silent evaluation failures.
+
+\vspace{0.15in}
+
+\textbf{1. Leakage-proof pipeline (Python)}
+
+\begin{codebox}{Python}
+# pipeline.py
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', RandomForestClassifier())
+])
+
+# Fit only on train
+pipeline.fit(X_train, y_train)
+
+# Transform test without re-fitting
+y_pred = pipeline.predict(X_test)
+\end{codebox}
+
+\vspace{0.15in}
+
+\textbf{2. Metric selection \& drift check (Python)}
+
+\begin{codebox}{Python}
+# metrics.py
+from sklearn.metrics import classification_report, fbeta_score
+print(classification_report(y_true, y_pred))
+
+# Custom scorer: recall twice as important
+business_score = fbeta_score(y_true, y_pred, beta=2)
+print(f"F2 Score: {business_score:.3f}")
+
+# Drift check (Population Stability Index)
+psi = compute_psi(expected_dist, actual_dist)
+if psi > 0.25:
+    trigger_retraining()
+\end{codebox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 8: THE BIG TAKEAWAY
+% ==========================================================
+
+\vspace*{0.35in}
+
+\begin{center}
+
+{\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE MLOPS TAKEAWAY}}
+
+\vspace{0.3in}
+
+\begin{minipage}{0.88\textwidth}
+\centering
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.2in}
+
+{\fontsize{24}{28}\selectfont\bfseries\color{brandnavy}
+A great validation score means\\[0.1in]
+nothing if your validation set lies.
+}
+
+\vspace{0.15in}
+
+{\fontsize{12}{14}\selectfont\color{brandgray}
+Leakage, metric misalignment, and drift silently corrupt your evaluation. If your validation doesn't mirror production, you're optimizing for a fantasy.
+
+\vspace{0.1in}
+Make validation a simulation of reality – not a formality.
+}
+
+\vspace{0.2in}
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.3in}
+
+{\fontsize{14}{16}\selectfont\bfseries\color{brandnavy}
+What's the biggest evaluation surprise\\
+you've caught in production?
+}
+
+\end{minipage}
+
+\end{center}
+
+\vfill
+
+% Full footer
+\begin{center}
+
+\rule{0.6\textwidth}{0.5pt}
+
+\vspace{0.12in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Building AI systems by understanding the mathematics,\\
+engineering, and intuition behind every architecture.
+}
+
+\vspace{0.12in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+\begin{tabular}{@{}l l}
+GitHub: & \texttt{github.com/MrHeaven1y} \\
+Portfolio: & \texttt{mrheaven1y.github.io} \\
+LinkedIn: & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+\end{tabular}
+}
+
+\vspace{0.12in}
+
+{\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.2in}
+
+
+% ==========================================================
+% SLIDE 9: COMING UP NEXT
+% ==========================================================
+
+\thispagestyle{empty}
+\vspace*{0.5in}
+
+\begin{center}
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{COMING UP NEXT...}}
+    
+    \vspace{0.4in}
+    
+    {\fontsize{32}{38}\selectfont\color{brandnavy}\bfseries
+    What Actually Breaks When\\[0.15in]
+    You Scale Training Across\\[0.15in]
+    Multiple GPUs
+    }
+    
+    \vspace{0.4in}
+    
+    \begin{minipage}{0.7\textwidth}
+        \centering
+        \color{brandgray}\fontsize{14}{18}\selectfont
+        Distributed training, memory bottlenecks,\\
+        and the hidden cost of parallelism.
+    \end{minipage}
+\end{center}
+
+\vfill
+
+\begin{center}
+    \rule{0.6\textwidth}{0.5pt}
+    
+    \vspace{0.15in}
+    
+    {\fontsize{11}{13}\selectfont\color{brandgray}
+    More production-grade MLOps deep dives coming soon.
+    }
+    
+    \vspace{0.12in}
+    
+    {\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+\end{center}
+
+\vspace*{0.2in}
+
+\newpage
+
+\end{document}

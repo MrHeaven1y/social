@@ -1,0 +1,165 @@
+\documentclass{article}
+\usepackage[paperwidth=8in, paperheight=10in, margin=0.8in]{geometry}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{fontspec}
+\usepackage{listings}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+% ---------- Color Palette ----------
+\definecolor{brandnavy}{HTML}{0A2540}
+\definecolor{brandgray}{HTML}{425466}
+\definecolor{brandlight}{HTML}{F8F9FA}
+\definecolor{brandblue}{HTML}{635BFF}
+\definecolor{brandorange}{HTML}{F25C05}
+\definecolor{codedark}{HTML}{141419}
+
+% ---------- Typography ----------
+\setmainfont{Noto Sans}
+\setmonofont{Noto Sans Mono}
+
+% ---------- Custom UI Components ----------
+\newtcolorbox{infobox}[1][]{
+    colback=brandlight,
+    colframe=brandblue,
+    boxrule=2pt,
+    arc=4pt,
+    auto outer arc,
+    #1
+}
+
+\newtcolorbox{darkbox}[1][]{
+    colback=brandlight,
+    colframe=brandorange,
+    boxrule=2pt,
+    arc=4pt,
+    #1
+}
+
+\lstset{
+    backgroundcolor=\color{codedark},
+    basicstyle=\color{white}\ttfamily\small,
+    keywordstyle=\color{brandblue}\bfseries,
+    commentstyle=\color{brandgray}\itshape,
+    stringstyle=\color{brandorange},
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{codedark},
+    breaklines=true
+}
+
+% ---------- Document Start ----------
+\begin{document}
+\pagecolor{white}
+\color{brandnavy}
+
+% SLIDE 1: The Hook
+\thispagestyle{empty}
+\vspace*{1.5in}
+{\Huge \textbf{I used to treat every pixel in an image exactly the same.}}\\[0.8in]
+{\Large Building a deepfake defense system taught me why that’s a terrible idea.}\\[1in]
+\vspace*{1.5in}
+{\Large \textbf{Project Breakdown: Adversarial Dual-Stream Autoencoder (ADSA)}}
+\newpage
+
+% SLIDE 2: The Core Challenge
+\thispagestyle{empty}
+\vspace*{1in}
+{\Huge \textbf{The Core Challenge}}\\[0.5in]
+{\Large While building our deepfake defense pipeline, we hit a wall.}\\[0.3in]
+{\Large We needed to watermark images cryptographically to prove provenance. But every time we ran a simulated face-swap, the watermark was completely destroyed.}\\[0.5in]
+
+\begin{darkbox}
+{\Large \textbf{The Trade-Off}}\\
+If we made the watermark stronger to survive attacks, it ruined the subject's face. Human eyes are simply too sensitive to high-frequency artifacts on skin.
+\end{darkbox}
+\vspace*{0.5in}
+{\Large We had to fundamentally rethink our approach.}
+\newpage
+
+% SLIDE 3: The Semantic-Aware Hypothesis
+\thispagestyle{empty}
+\vspace*{1in}
+{\Huge \textbf{The Semantic-Aware Hypothesis}}\\[0.5in]
+{\Large The realization was simple: Not all pixels are created equal.}\\[0.3in]
+{\Large A high-variance background---like a forest, a brick wall, or busy traffic---can hide a massive amount of cryptographic noise.}\\[0.3in]
+{\Large The human eye naturally ignores it.}\\[0.5in]
+
+\begin{infobox}
+{\Large Instead of watermarking the entire image equally, what if we segment the architecture based on semantic context?}
+\end{infobox}
+\newpage
+
+% SLIDE 4: The Dual-Stream Architecture
+\thispagestyle{empty}
+\vspace*{1in}
+{\Huge \textbf{The Dual-Stream Autoencoder}}\\[0.5in]
+{\Large Building on the Vanilla Autoencoder concepts we've been experimenting with, we ran two parallel streams.}\\[0.3in]
+{\Large In the latent space, the embedded tensor \(\widehat{z}\) is mathematically defined as:}
+\[
+\widehat{z}_{bg} = z_{bg} + \alpha \cdot w_{chaos}
+\]
+\vspace*{0.2in}
+{\Large Where \(\alpha\) (the watermark strength) is heavily amplified for the background stream, completely decoupled from the object's fidelity constraints.}
+\newpage
+
+% SLIDE 5: Code Implementation
+\thispagestyle{empty}
+\vspace*{1in}
+{\Huge \textbf{Implementation Details}}\\[0.5in]
+{\Large We segmented the image using U-Net, then injected a SHA-512 chaotic spread-spectrum sequence directly into the latent feature bottlenecks.}\\[0.3in]
+
+\begin{lstlisting}[language=Python, title=Semantic Partitioning]
+# 1. Isolate the semantic components
+object_tensor, background_tensor = semantic_segmentation(image)
+
+# 2. Inject chaotic sequence into the latent bottlenecks
+z_obj = encoder_obj(object_tensor) + delicate_watermark
+z_bg = encoder_bg(background_tensor) + massive_watermark
+
+# 3. Reconstruct and Gaussian blend
+watermarked_image = blend(decoder_obj(z_obj), decoder_bg(z_bg))
+\end{lstlisting}
+\vspace*{0.3in}
+{\Large The face gets a delicate watermark. The background gets a massive, highly robust one.}
+\newpage
+
+% SLIDE 6: The Digital Witness
+\thispagestyle{empty}
+\vspace*{1in}
+{\Huge \textbf{The Digital Witness}}\\[0.5in]
+{\Large The results proved the hypothesis.}\\[0.3in]
+{\Large When the face gets swapped maliciously in a deepfake attack, the delicate face watermark is destroyed.}\\[0.3in]
+{\Large But the background watermark survives perfectly.}\\[0.5in]
+
+\begin{darkbox}
+{\Large \textbf{Tamper Evidence}}\\
+The surviving background acts as an immutable "Digital Witness"—cryptographically proving the image was tampered with simply because half the sequence is missing.
+\end{darkbox}
+\newpage
+
+% SLIDE 7: The Mic Drop
+\thispagestyle{empty}
+\vspace*{3in}
+\begin{center}
+{\Huge \textbf{Sometimes the best way to protect the subject is to ignore it, and protect the environment instead.}}
+\end{center}
+\newpage
+
+% SLIDE 8: The Preview & Sign-off
+\thispagestyle{empty}
+\vspace*{1in}
+\begin{center}
+{\Huge \textbf{COMING UP NEXT}}\\[0.3in]
+{\Large \textit{Adversarial Extractor Training: Teaching DCNNs to rely on Kullback-Leibler Divergence.}}\\[2in]
+\end{center}
+
+\noindent\rule{\textwidth}{0.5pt}\\[0.2in]
+{\Large \textbf{Dibayendu Mukherjee}}\\[0.1in]
+{\large AI Engineer | MLOps \& Agentic Systems}\\[0.1in]
+\faGithub \hspace{0.1in} \texttt{github.com/heavenly} \hspace{0.3in}
+\faLinkedin \hspace{0.1in} \texttt{linkedin.com/in/dibayendu}
+
+\end{document}

@@ -1,0 +1,983 @@
+\documentclass[11pt]{article}
+
+% --- UNIVERSAL PREAMBLE BLOCK ---
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+\usepackage{fontspec}
+\usepackage[english, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+% --- PACKAGES FOR MODERN DESIGN ---
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+% --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419} % Very dark, sleek background
+\definecolor{codekeyword}{HTML}{FF7B72}    % Soft Red (like GitHub Dark)
+\definecolor{codestring}{HTML}{A5D6FF}     % Soft Blue/Cyan
+\definecolor{codecomment}{HTML}{8B949E}    % Muted Gray
+\definecolor{codetext}{HTML}{E6EDF3}       % Off-white for standard text
+\definecolor{codeframe}{HTML}{30363D}      % Subtle border
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% --- LISTINGS SETUP FOR PRODUCTION CODE ---
+\lstdefinestyle{premiumcode}{
+    backgroundcolor=\color{codebackground},
+    basicstyle=\ttfamily\footnotesize\color{codetext},
+    breakatwhitespace=false,
+    breaklines=true,
+    commentstyle=\color{codecomment}\itshape,
+    keepspaces=true,
+    keywordstyle=\color{codekeyword}\bfseries,
+    morekeywords={async, await, def, class, import, from, return, pass, with},
+    stringstyle=\color{codestring},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=none,
+    aboveskip=0pt,
+    belowskip=0pt
+}
+
+% Custom TColorBox for Code blocks with padding and titles
+\newtcblisting{codebox}[1][]{
+    listing only,
+    breakable,
+    enhanced,
+    colback=codebackground,
+    colframe=codeframe,
+    boxrule=0.5pt,
+    arc=6pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt,
+    coltitle=codecomment,
+    fonttitle=\sffamily\scriptsize\bfseries,
+    title={#1},
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=codebackground, frame hidden},
+    listing options={style=premiumcode}
+}
+
+% --- HEADER & FOOTER CONFIGURATION ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt} % Removed header rule for cleaner look
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{Software \& System Design}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{EPISODE 01}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.8in}
+\begin{center}
+    
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{SOFTWARE \& SYSTEM DESIGN \quad $\cdot$ \quad EPISODE 01}}
+    
+    \vspace{0.8in}
+    
+    {\fontsize{42}{50}\selectfont\color{brandnavy}\bfseries Decoupling LLM\\Providers from\\Business Logic}
+    
+    \vspace{0.6in}
+    
+    {\fontsize{18}{24}\selectfont\color{brandgray}Engineering production-ready AI systems from first principles.}
+    
+    \vfill
+    
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt} \\
+        \vspace{0.2in}
+        {\fontsize{12}{14}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}} \\
+        \vspace{0.05in}
+        {\fontsize{10}{12}\selectfont\color{brandgray}AI Research Engineer \quad $\cdot$ \quad Systems Engineer}
+    \end{minipage}
+    
+\end{center}
+\newpage
+
+% ==========================================================
+% SLIDE 2: THE PROBLEM
+% ==========================================================
+
+\vspace*{1.8in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries The Problem}
+\end{center}
+
+\vspace{0.4in}
+
+Many teams build initial features by calling raw AI SDKs directly inside their web routers or service classes. What begins as a fast integration quickly degrades as the application scales.
+
+\vspace{0.25in}
+
+Tightly coupling third-party APIs directly to your core business logic renders code brittle, impossible to test reliably in isolation, and restricts you to a single vendor.
+
+\newpage
+
+\vspace*{1.2in}
+
+\begin{center}
+{\Large\bfseries The Naive Request Lifecycle}
+\end{center} % <--- THIS WAS MISSING!
+
+% ==========================================================
+% SLIDE 3: TIGHT COUPLING
+% ==========================================================
+
+\vspace*{0.2in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries
+A Tightly Coupled Architecture}
+
+\end{center}
+
+\vspace{0.35in}
+
+{\Large\color{brandnavy}\textbf{What is Tight Coupling?}}
+
+\vspace{0.15in}
+
+{\large
+Coupling measures how much one software component
+depends on another.
+}
+
+\vspace{0.15in}
+
+{\large
+A system is \textbf{tightly coupled} when it depends on
+\textbf{concrete implementations} rather than
+\textbf{abstractions}.
+}
+
+\vspace{0.45in}
+
+% ---------------- Diagram ----------------
+
+\begin{center}
+
+\begin{tikzpicture}[
+    node distance=1.05in,
+    box/.style={
+        draw=brandnavy,
+        fill=brandlight,
+        rounded corners=5pt,
+        minimum width=2.8in,
+        minimum height=0.75in,
+        align=center,
+        font=\small\sffamily,
+        line width=1pt
+    },
+    arrow/.style={
+        -Stealth,
+        brandblue,
+        line width=1.4pt
+    }
+]
+
+\node[box] (client) {
+\textbf{HTTP Client}\\
+(Web / Mobile)
+};
+
+\node[box, below=of client] (app) {
+\textbf{Application Layer}\\
+Router + Business Logic
+};
+
+\node[box, below=of app] (provider) {
+\textbf{Concrete LLM Provider}\\
+(OpenAI / Anthropic / Gemini)
+};
+
+\draw[arrow] (client) --
+node[right,font=\scriptsize\ttfamily\color{brandgray}]
+{POST /chat}
+(app);
+
+\draw[arrow] (app) --
+node[right,font=\scriptsize\ttfamily\color{brandgray}]
+{provider.generate()}
+(provider);
+
+\end{tikzpicture}
+
+\end{center}
+
+\vspace{0.45in}
+
+{\Large\color{brandnavy}\textbf{Why is this an Anti-pattern?}}
+
+\vspace{0.2in}
+
+\begin{itemize}[leftmargin=0.5in,itemsep=0.18in]
+
+\item Business logic knows the SDK.
+
+\item Provider changes ripple through application code.
+
+\item Difficult to unit test because vendor SDKs must be mocked.
+
+\item Creates vendor lock-in and reduces maintainability.
+
+\end{itemize}
+
+\vfill
+
+\newpage
+
+% ==========================================================
+% SLIDE 3: FROM ARCHITECTURE TO CODE
+% ==========================================================
+
+\section*{From Architecture to Code}
+
+\vspace{0.2in}
+
+The previous diagram showed a tightly coupled architecture.
+
+Now let's see what that dependency looks like in actual production code. Every highlighted line below increases coupling between the application and the external LLM provider.
+
+\vspace{0.25in}
+
+\begin{codebox}[app/api/routes/copilot.py]
+from fastapi import APIRouter
+
+//! Vendor SDK imported directly into the application layer
+from openai import OpenAI // Or any LLM Provider
+
+router = APIRouter()
+
+//! Global provider instance bound to OpenAI
+client = OpenAI(api_key="sk-...")
+
+@router.post("/chat")
+async def chat(prompt: str):
+
+    //> Business logic knows the OpenAI API
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    //> OpenAI response model leaks into business logic
+    return {
+        "response": response.choices[0].message.content
+    }
+\end{codebox}
+
+\vspace{0.35in}
+
+\newpage
+{\Large\color{brandnavy}\textbf{Why is this a Bad Architecture?}}
+
+\vspace{0.2in}
+
+\begin{itemize}[leftmargin=0.45in,itemsep=0.18in]
+
+\item \textbf{The router imports the vendor SDK directly.}
+
+The application layer depends on a specific LLM provider rather than an abstraction, creating tight coupling.
+
+\item \textbf{Business logic understands provider-specific APIs.}
+
+Methods calls such as \texttt{chat.completions.create()} become part of core logic, binding functionality to one provider’s interface.
+
+\item \textbf{Provider response objects leak upward.}
+
+Application logic directly consumes provider‑specific response formats
+
+(\texttt{response.choices[0].message.content}), Any change in the provider’s schema propagates through routers, services, and tests, forcing widespread code modifications.
+
+\item \textbf{Testing becomes unnecessarily difficult.}
+
+Unit tests must mock full SDK clients and replicate provider‑specific response structures, adding unnecessary overhead.
+
+\item \textbf{Swapping providers requires code changes.}
+
+Migrating to Anthropic, Gemini, Azure OpenAI, or a self‑hosted model demands application changes instead of a simple implementation replacement.
+
+\end{itemize}
+
+\vspace{0.25in}   % Adjust between 0.15in–0.35in as needed
+
+\begin{tcolorbox}[
+colback=brandlight,
+colframe=brandblue,
+arc=5pt,
+boxrule=0.8pt,
+left=10pt,
+right=10pt,
+top=8pt,
+bottom=8pt
+]
+
+{\large\color{brandblue}\textbf{The Core Problem}}
+
+Every layer of the application depends on a \textbf{concrete LLM provider}.
+
+To eliminate this dependency, we need an \textbf{abstraction} that sits between our business logic and every external AI SDK.
+
+\end{tcolorbox}
+
+\vspace{0.18in}
+
+\begin{center}
+\color{brandgray}
+\large\textit{Let's build that abstraction.}
+\end{center}
+
+\vfill
+
+\newpage
+
+% ==========================================================
+% SLIDE 4: IMPROVED DESIGN ARCHITECTURE
+% ==========================================================
+
+\section*{The Boundary Interface}
+
+\vspace{0.25in}
+
+The solution is to introduce a stable boundary between our application and external AI providers.
+
+Instead of depending directly on OpenAI, Anthropic, or Gemini, the application depends on a single interface:
+
+\begin{center}
+\begin{tikzpicture}
+    \node[
+        draw=brandblue, 
+        line width=1.5pt, 
+        fill=white, 
+        blur shadow={shadow blur steps=5, shadow xshift=0pt, shadow yshift=-2pt, shadow opacity=15},
+        rounded corners=6pt, 
+        inner xsep=20pt, 
+        inner ysep=12pt, 
+        font=\Large\ttfamily\bfseries\color{brandnavy}
+    ] {LLMProvider};
+\end{tikzpicture}
+\end{center}
+
+Every provider simply implements this contract.
+
+\vspace{0.45in}
+
+\begin{center}
+\begin{tikzpicture}[
+    >=Stealth,
+    node distance=0.8in and 0.25in, 
+    box/.style={
+        draw=brandnavy,
+        fill=brandlight,
+        rounded corners=6pt,
+        minimum width=3.2cm,
+        minimum height=1cm,
+        align=center,
+        line width=1pt,
+        font=\small\sffamily
+    },
+    interface/.style={
+        draw=brandblue,
+        fill=white,
+        rounded corners=6pt,
+        minimum width=4.2cm,
+        minimum height=1cm,
+        align=center,
+        line width=1.4pt,
+        font=\small\sffamily\bfseries
+    }
+]
+
+%------------------------------------------------
+% Top
+%------------------------------------------------
+\node[box] (service) {FastAPI\\Service Layer};
+
+%------------------------------------------------
+% Interface
+%------------------------------------------------
+\node[interface, below=0.8in of service] (llm) {$\langle\langle$Interface$\rangle\rangle$\\[2mm]\texttt{LLMProvider}};
+
+%------------------------------------------------
+% Bottom Row
+%------------------------------------------------
+\node[box, below=0.8in of llm] (openai) {OpenAI\\Provider};
+\node[box, left=0.25in of openai] (anthropic) {Anthropic\\Provider};
+\node[box, right=0.25in of openai] (mock) {Mock\\Provider};
+
+%------------------------------------------------
+% Connections
+%------------------------------------------------
+\draw[->,brandblue,line width=1.3pt] (service) -- node[right,font=\scriptsize\color{brandgray}] {depends on} (llm);
+\draw[->,brandgray,dashed,line width=1.2pt] (anthropic) -- (llm);
+\draw[->,brandgray,dashed,line width=1.2pt] (openai) -- node[right,font=\scriptsize\color{brandgray}] {implements} (llm);
+\draw[->,brandgray,dashed,line width=1.2pt] (mock) -- (llm);
+
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.25in}
+
+By depending only on an abstraction, the application remains unchanged when switching providers, upgrading SDKs, or introducing mock implementations for testing.
+
+\newpage
+
+% ==========================================================
+% SLIDE 5: DEFINING THE CONTRACT (THE ABSTRACTION)
+% ==========================================================
+\section*{Defining the Contract}
+\vspace{0.15in}
+
+So far, our business logic has depended directly on a concrete LLM provider. That tightly couples the application to a single vendor, making provider changes ripple through the codebase.
+
+\vspace{0.1in}
+
+To solve this, we introduce a simple contract that every LLM provider must implement. Whether the implementation wraps OpenAI, Anthropic, Gemini, or a local model, the application always interacts with the same interface, providing a uniform language across all providers.
+
+
+\vspace{0.1in}
+
+The contract has a single responsibility: given a list of messages, return the generated response. By depending on this abstraction instead of a concrete SDK, our business logic remains provider-independent while ensuring consistent behavior regardless of the underlying implementation.
+
+\vspace{0.1in}
+
+\begin{codebox}[app/providers/interfaces.py]
+from abc import ABC, abstractmethod
+
+class LLMProvider(ABC):
+    @abstractmethod
+    async def generate(self, messages: list[dict]) -> str:
+        """The standard input/output boundary."""
+        pass
+\end{codebox}
+
+\vspace{0.4in}
+
+\begin{center}
+\color{brandnavy}
+\Large\textbf{Our application now depends on an abstraction, not an SDK.}
+
+\vspace{0.12in}
+
+\color{brandgray}
+\large\textit{Every provider must implement the same interface before it can be used.
+The application never knows which provider is underneath, it only knows the contract.}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 6: IMPLEMENTING THE CONTRACT (THE ADAPTER)
+% ==========================================================
+\section*{Implementing the Contract}
+\vspace{0.15in}
+
+With the contract in place, every provider only needs to implement the same interface. Each implementation translates our standard contract into the provider's SDK, keeping vendor-specific code isolated behind a single class.
+
+\vspace{0.1in}
+
+This separation makes each provider easy to unit test while future-proofing the architecture. If a provider changes its SDK, only that implementation needs to be updated. The rest of the application remains untouched.
+
+\vspace{0.2in}
+
+\begin{codebox}[app/providers/openai\_provider.py]
+from openai import AsyncOpenAI
+from app.providers.interfaces import LLMProvider
+
+class OpenAIProvider(LLMProvider):
+    def __init__(self):
+        self.client = AsyncOpenAI()
+
+    async def generate(self, messages: list[dict]) -> str:
+        # Vendor-specific logic stays isolated here
+        response = await self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages
+        )
+        return response.choices[0].message.content
+\end{codebox}
+
+\vspace{0.4in}
+
+\begin{center}
+\color{brandgray}
+
+\large\textit{The application depends on the interface, while each provider handles its own SDK internally.\\[0.15in]
+The final step is injecting the provider implementation as a dependency into our application.}
+
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 7: CONSTRUCTOR INJECTION
+% ==========================================================
+\section*{The Service Depends on an Abstraction}
+\vspace{0.15in}
+
+We now have an \texttt{OpenAIProvider} that implements the \texttt{LLMProvider} contract. The remaining question is: how does our application receive this implementation?
+
+
+Instead of creating an \texttt{OpenAIProvider} directly, the \texttt{CopilotService} simply requests an \texttt{LLMProvider}. Dependency Injection supplies the concrete implementation at runtime, so the service never knows which provider is underneath. It only knows how to call \texttt{generate(messages)} through the contract.
+
+\vspace{0.1in}
+
+\begin{codebox}[app/services/copilot\_service.py]
+from app.providers.interfaces import LLMProvider
+
+class CopilotService:
+    def __init__(self, llm: LLMProvider):
+        self.llm = llm
+
+    async def answer(self, prompt: str):
+        return await self.llm.generate([
+            {"role": "user", "content": prompt}
+        ])
+\end{codebox}
+
+\vspace{0.3in}
+
+\noindent
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.25in,
+        arrow/.style={-Stealth, brandblue, line width=1.4pt},
+        box/.style={
+            align=center,
+            font=\small\ttfamily\color{brandgray},
+            minimum height=0.2in
+        },
+        abstract/.style={
+            draw=brandblue, fill=white, rounded corners=4pt, line width=1.2pt,
+            font=\small\sffamily\bfseries\color{brandblue}, inner xsep=8pt, inner ysep=4pt,
+            align=center
+        },
+        concrete/.style={
+            draw=brandgray, fill=brandlight, rounded corners=4pt, line width=1pt,
+            font=\small\sffamily\color{brandgray}, inner xsep=8pt, inner ysep=4pt,
+            align=center
+        },
+        servicebox/.style={
+            draw=brandnavy, fill=brandlight, rounded corners=4pt, line width=1pt,
+            font=\normalsize\sffamily\bfseries\color{brandnavy}, inner xsep=10pt, inner ysep=6pt,
+            align=center
+        }
+    ]
+
+    \node[concrete] (openai) {OpenAIProvider};
+    \node[abstract, below=0.3in of openai] (llm) {LLMProvider};
+    \node[servicebox, below=0.35in of llm] (service) {CopilotService(\\ \small\ttfamily\color{brandgray} llm: LLMProvider \\)};
+    \node[box, below=0.25in of service] (answer) {answer(prompt)};
+    \node[box, below=0.2in of answer] (generate) {llm.generate(...)};
+
+    \draw[arrow] (openai) -- node[right, font=\scriptsize\sffamily\color{brandgray}, xshift=2pt] {implements} (llm);
+    \draw[arrow] (llm) -- node[right, font=\scriptsize\sffamily\color{brandgray}, xshift=2pt] {passed into} (service);
+    \draw[arrow] (service) -- (answer);
+    \draw[arrow] (answer) -- (generate);
+
+    \end{tikzpicture}
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.48\textwidth}
+    \begin{tcolorbox}[
+        colback=brandlight,
+        colframe=brandblue,
+        arc=5pt,
+        boxrule=0.8pt,
+        left=10pt, right=10pt, top=10pt, bottom=10pt
+    ]
+    \small
+    \textbf{\color{brandblue}Constructor Injection}\\[0.1in]
+    The constructor receives an \texttt{LLMProvider} as an argument. This injected dependency can be any class that implements the interface, keeping the service independent of a specific LLM provider.
+    \end{tcolorbox}
+\end{minipage}
+
+\newpage
+
+
+% ==========================================================
+% SLIDE 8: FRAMEWORK WIRING (DEPENDENCY INJECTION)
+% ==========================================================
+\section*{The Framework Wires Everything Together}
+\vspace{0.1in}
+
+Our service expects an \texttt{LLMProvider}, but it never creates one. Instead, it declares the dependency and lets the framework provide it.
+
+This is where \textbf{FastAPI} acts as the composition root (the single place where concrete implementations are created and wired together). Using \texttt{Depends()}, FastAPI resolves the dependency, calls the provider function, and injects the resulting \texttt{LLMProvider} into the service.
+
+\vspace{0.15in}
+
+\begin{codebox}[app/dependencies.py]
+from fastapi import Depends
+from app.providers.openai_provider import OpenAIProvider
+
+def get_llm():
+    return OpenAIProvider()
+
+def get_service(
+    llm = Depends(get_llm)
+):
+    return CopilotService(llm)
+\end{codebox}
+
+\vspace{0.25in}
+
+\noindent
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.18in,
+        arrow/.style={-Stealth, brandblue, line width=1.4pt},
+        box/.style={
+            align=center,
+            font=\small\ttfamily\color{brandnavy},
+            minimum height=0.18in
+        },
+        highlight/.style={
+            draw=brandnavy,
+            fill=brandlight,
+            rounded corners=4pt,
+            line width=1pt,
+            font=\small\ttfamily\bfseries\color{brandnavy},
+            inner xsep=8pt,
+            inner ysep=5pt,
+            align=center
+        },
+        note/.style={
+            font=\scriptsize\sffamily\color{brandgray},
+            align=left
+        }
+    ]
+
+    % Main flow
+    \node[box,font=\normalsize\sffamily\bfseries\color{brandnavy}] (request) 
+    {Incoming Request};
+
+    \node[box,below=0.18in of request] (service) 
+    {get\_service()};
+
+    \node[box,below=0.18in of service] (depends) 
+    {\texttt{Depends(get\_llm)}};
+
+    \node[box,below=0.18in of depends] (providerfn) 
+    {get\_llm()};
+
+    \node[highlight,below=0.28in of providerfn] (provider) 
+    {OpenAIProvider()};
+
+    \node[highlight,below=0.40in of provider] (copilot) 
+    {CopilotService\\(\texttt{llm: LLMProvider})};
+
+    % Annotation (Adjusted distance to fit minipage)
+    \node[note,right=0.3in of provider] 
+    (implements) 
+    {implements\\\texttt{LLMProvider}};
+
+    \draw[dashed,brandgray] (provider.east) -- (implements.west);
+
+    % Flow arrows
+    \draw[arrow] (request) -- (service);
+    \draw[arrow] (service) -- node[right,font=\scriptsize\sffamily\color{brandgray}] {requests} (depends);
+    \draw[arrow] (depends) -- node[right,font=\scriptsize\sffamily\color{brandgray}] {calls} (providerfn);
+    \draw[arrow] (providerfn) -- node[right,font=\scriptsize\sffamily\color{brandgray}] {returns} (provider);
+    \draw[arrow] (provider) -- node[right,font=\scriptsize\sffamily\color{brandgray}] {injects} (copilot);
+
+    \end{tikzpicture}
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.48\textwidth}
+    \textbf{\color{brandblue}FastAPI Dependency Injection}\\[0.1in]
+    \small
+    \texttt{Depends()} tells FastAPI how to resolve a dependency. When an \texttt{LLMProvider} is required, FastAPI calls the provider function, obtains the concrete implementation (such as \texttt{OpenAIProvider}), and injects it automatically into the service.
+    
+    \vspace{0.25in}
+    
+    \begin{tcolorbox}[
+        colback=brandlight,
+        colframe=brandblue,
+        arc=5pt,
+        boxrule=0.8pt,
+        left=10pt, right=10pt, top=10pt, bottom=10pt
+    ]
+    \small
+    \textbf{\color{brandblue}Dependency Injection at Runtime}\\[0.1in]
+    The framework automatically creates the concrete implementation and injects it into the service just in time to handle the request.
+    \end{tcolorbox}
+\end{minipage}
+
+\newpage
+
+% ==========================================================
+% SLIDE 9: PRODUCTION CAPABILITIES ENABLED (Part 1 - Theory)
+% ==========================================================
+
+\section*{Production Capabilities Enabled by the Abstraction}
+\vspace{0.15in}
+
+Because every request flows through the same \texttt{LLMProvider} interface, the provider boundary becomes the single extension point for the entire application. Instead of modifying business logic, we extend the provider layer with new capabilities while keeping the service layer unchanged.
+
+\vspace{0.15in}
+
+\begin{itemize}[leftmargin=*, itemsep=0.15in]
+
+\item \textbf{Single abstraction point} \\
+\textit{Minimize the surface area of change.} Every request flows through \texttt{LLMProvider}. One boundary absorbs volatility.
+
+\item \textbf{Centralized production behavior} \\
+\textit{Separate cross-cutting concerns from business logic.} Retries, failover, logging, caching, cost tracking, and rate limiting all live at the provider boundary. Keep business code pure.
+
+\item \textbf{Decorator pattern} \\
+\textit{Composition over inheritance.} Wrappers like \texttt{LoggingProvider} or \texttt{RetryProvider} compose around the core provider. Behaviors are layered without modifying the core.
+
+\item \textbf{Replaceability} \\
+\textit{Depend on abstractions, not implementations.} You can swap OpenAI for Anthropic, or add/remove wrappers, without touching \texttt{CopilotService}. The service remains blind to vendor quirks.
+
+\item \textbf{Future-proofing} \\
+\textit{Extend without modifying.} New capabilities (e.g., caching, observability) can be added by introducing another wrapper. The abstraction boundary enables open/closed design.
+
+\end{itemize}
+
+\newpage
+
+% ==========================================================
+% SLIDE 10: EXTENDING THE BOUNDARY (Part 2 - Implementation)
+% ==========================================================
+
+\section*{Extending the Boundary in Practice}
+\vspace{0.15in}
+
+\noindent
+\begin{minipage}[c]{0.42\textwidth}
+    By utilizing the decorator pattern, we can stack these production capabilities around our core provider. 
+
+    \vspace{0.15in}
+
+    Each wrapper implements the same \texttt{LLMProvider} interface, allowing them to be nested infinitely. 
+    
+    \vspace{0.15in}
+    
+    The business logic calls the interface, the request passes transparently down the chain, and the response bubbles back up.
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.54\textwidth}
+    \centering
+    \begin{tikzpicture}[
+        >=Stealth,
+        node distance=0.2in,
+        box/.style={
+            draw=brandnavy, fill=brandlight, rounded corners=4pt,
+            minimum width=3.1in, minimum height=0.35in, align=center,
+            font=\small\sffamily\bfseries\color{brandnavy}, line width=1pt
+        },
+        abstract/.style={
+            draw=brandblue, fill=white, rounded corners=4pt,
+            minimum width=3.1in, minimum height=0.35in, align=center,
+            font=\small\sffamily\bfseries\color{brandblue}, line width=1.2pt
+        },
+        middleware/.style={
+            draw=brandgray, fill=brandlight, rounded corners=4pt,
+            minimum width=3.1in, align=center,
+            font=\small\sffamily\bfseries\color{brandgray}, line width=1pt, inner sep=6pt
+        },
+        arrow/.style={->, brandblue, line width=1.4pt}
+    ]
+
+    \node[box] (logic) {Business Logic};
+    \node[abstract, below=of logic] (interface) {LLMProvider};
+    \node[middleware, below=of interface] (wrappers) {
+        Retry Wrapper \quad $\cdot$ \quad Logging \& Metrics \\[4pt]
+        Response Caching \quad $\cdot$ \quad Fallback Wrapper
+    };
+    \node[box, below=of wrappers] (vendor) {OpenAI / Anthropic};
+
+    \draw[arrow] (logic) -- (interface);
+    \draw[arrow] (interface) -- (wrappers);
+    \draw[arrow] (wrappers) -- (vendor);
+
+    \end{tikzpicture}
+\end{minipage}
+
+\vspace{0.25in}
+
+\begin{codebox}[Adding Capabilities via the Decorator Pattern]
+class LoggingProvider(LLMProvider):
+    def __init__(self, inner: LLMProvider):
+        self.inner = inner  # Wraps the next provider in the chain
+
+    async def generate(self, messages: list[dict]) -> str:
+        logger.info(f"LLM Request: {messages}")
+        
+        # Passes the request down the chain
+        response = await self.inner.generate(messages)
+        
+        logger.info(f"LLM Response: {response}")
+        return response
+\end{codebox}
+
+\newpage
+
+% ==========================================================
+% SLIDE 11: LESSONS LEARNED
+% ==========================================================
+\section*{Lessons Learned}
+\vspace{0.2in}
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.22in,
+    box/.style={
+        draw=brandnavy,
+        fill=brandlight,
+        rounded corners=6pt,
+        minimum width=5.8in,
+        minimum height=1.0in,
+        align=center,
+        line width=1.2pt
+    }
+]
+
+% Box 1: Flexibility
+\node[box] (flex) {
+    {\Large\color{brandblue}\textbf{Flexibility}}\\[0.08in]
+    {\large\color{brandgray}Switch providers effortlessly without changing business logic.}
+};
+
+% Box 2: Maintainability
+\node[box, below=of flex] (maint) {
+    {\Large\color{brandblue}\textbf{Maintainability}}\\[0.08in]
+    {\large\color{brandgray}New providers only need to implement one interface.}
+};
+
+% Box 3: Scalability
+\node[box, below=of maint] (scale) {
+    {\Large\color{brandblue}\textbf{Scalability}}\\[0.08in]
+    {\large\color{brandgray}Production features remain centralized and organized.}
+};
+
+% Box 4: Reliability
+\node[box, below=of scale] (rel) {
+    {\Large\color{brandblue}\textbf{Reliability}}\\[0.08in]
+    {\large\color{brandgray}Retries, fallback, and monitoring become reusable.}
+};
+
+\end{tikzpicture}
+\end{center}
+
+\vfill
+\newpage
+
+
+% ==========================================================
+% SLIDE 12: THE ARCHITECTURAL PRINCIPLE (MIC DROP)
+% ==========================================================
+\vspace*{0.3in}
+\begin{center}
+    
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE ARCHITECTURAL PRINCIPLE}}
+    
+    \vspace{0.8in}
+    
+    \begin{minipage}{0.85\textwidth}
+        \centering
+        {\fontsize{28}{36}\selectfont\color{brandnavy}\bfseries Good architecture isn't about choosing the right SDK.\\[0.3in] It's about making the SDK replaceable.}
+    \end{minipage}
+    
+    \vspace{0.8in}
+    
+    {\fontsize{16}{20}\selectfont\color{brandgray}\textbf{Wrap it. \quad Abstract it. \quad Inject it.}}
+    
+\end{center}
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 13: PREVIEW
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.5in} 
+\begin{center}
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{COMING UP NEXT...}}
+    
+    \vspace{0.4in} 
+    
+    {\fontsize{32}{38}\selectfont\color{brandnavy}\bfseries Clean Persistence:\\The Repository Pattern\\in FastAPI}
+    
+    \vspace{0.4in} 
+    
+    \begin{minipage}{0.7\textwidth}
+        \centering
+        \color{brandgray}\fontsize{14}{18}\selectfont
+        Learn how the Repository Pattern separates persistence from business logic, enabling fast, database-independent unit tests and a cleaner architecture.
+    \end{minipage}
+\end{center}
+
+\vfill
+\vspace{0.1in}
+\begin{center}
+    \rule{0.6\textwidth}{0.5pt}
+
+    \vspace{0.18in}
+    
+    {\fontsize{11}{13}\selectfont\color{brandgray}
+    Building production-grade AI systems, one architectural pattern at a time.
+    }
+
+    \vspace{0.18in}
+
+    % The Links Row
+    {\fontsize{10}{12}\selectfont\color{brandgray}
+    \faGithub\ \texttt{github.com/MrHeaven1y}
+    \hspace{0.45in}
+    \faLinkedin\ \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+    }
+
+    \vspace{0.15in}
+
+    % The Name
+    {\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.3in} 
+
+\end{document}

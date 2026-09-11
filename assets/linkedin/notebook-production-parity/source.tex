@@ -1,0 +1,544 @@
+\documentclass[11pt]{article}
+
+% --- UNIVERSAL PREAMBLE BLOCK ---
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+\usepackage{fontspec}
+\usepackage[english, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using Noto Sans system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+% --- PACKAGES FOR MODERN DESIGN & MATHS ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+% --- DESIGN TOKENS (Stripe & Linear Inspired) ---
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+\definecolor{brandred}{HTML}{E5484D}     % Warning Red
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419}
+\definecolor{codekeyword}{HTML}{FF7B72}
+\definecolor{codestring}{HTML}{A5D6FF}
+\definecolor{codecomment}{HTML}{8B949E}
+\definecolor{codetext}{HTML}{E6EDF3}
+\definecolor{codeframe}{HTML}{30363D}
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% Custom TColorBox for styled content blocks
+\newtcolorbox{infobox}[1][]{
+    colback=brandlight, colframe=brandblue, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, #1
+}
+
+\newtcolorbox{darkbox}[1][]{
+    colback=brandnavy, colframe=brandnavy, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, 
+    coltext=white, #1
+}
+
+% Custom TColorBox for Syntax Highlighted Code
+\newtcblisting{codebox}[2][]{
+    colback=codebackground, colframe=codeframe, arc=5pt, boxrule=1pt,
+    left=10pt, right=10pt, top=10pt, bottom=10pt,
+    listing only, listing options={
+        basicstyle=\ttfamily\footnotesize\color{codetext},
+        keywordstyle=\color{codekeyword}\bfseries,
+        stringstyle=\color{codestring},
+        commentstyle=\color{codecomment}\itshape,
+        showstringspaces=false,
+        breaklines=true,
+        language=#2
+    },
+    #1
+}
+
+% --- HEADER & FOOTER CONFIGURATION ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{MLOps Deep Dive}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{PRODUCTION PARITY}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.8in}
+
+\begin{center}
+
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{
+    FROM NOTEBOOK TO PRODUCTION
+    }}
+
+    \vspace{0.8in}
+
+    {\fontsize{40}{48}\selectfont\color{brandnavy}\bfseries
+Why my perfect\\[0.15in]
+notebook model\\[0.25in]
+failed in production.
+}
+
+    \vspace{0.6in}
+
+    {\fontsize{18}{24}\selectfont\color{brandgray}
+    The painful lesson of silent failures,\\
+    mismatched defaults, and why parity\\
+    beats perfect metrics.
+    }
+
+    \vfill
+
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt}
+
+        \vspace{0.2in}
+
+        {\fontsize{12}{14}\selectfont\color{brandnavy}
+        \textbf{Dibayendu Mukherjee}
+        }
+
+        \vspace{0.05in}
+
+        {\fontsize{10}{12}\selectfont\color{brandgray}
+        AI Research Engineer \quad $\cdot$ \quad Systems Engineer
+        }
+
+    \end{minipage}
+
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 2: THE CONTEXT
+% ==========================================================
+\vspace*{0.4in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+The Initial Setup}
+\end{center}
+
+\vspace{0.3in}
+
+{\large\color{brandgray}
+Everything looked flawless in the development environment.
+}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{What I Built}}
+
+\vspace{0.05in}
+\begin{itemize}[leftmargin=*, itemsep=0.08in, label={\color{brandblue}\textbullet}]
+    \item A classification model trained on a cleaned CSV.
+    \item Standard in-memory preprocessing pipeline.
+    \item A small, efficient data augmentation flow.
+    \item Trained locally on a single dev GPU.
+\end{itemize}
+\end{darkbox}
+
+\vspace{0.2in}
+
+On my laptop, the training loop converged beautifully. Accuracy was stable, validation loss looked great, and inference latency was well within acceptable limits.
+
+\vspace{0.15in}
+
+\begin{infobox}
+\textbf{The Fatal Assumption:}\\
+I assumed the exact same code and configuration would behave the identically when scaled into a production environment.
+\end{infobox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 3: THE MISTAKE
+% ==========================================================
+\section*{The Mistake}
+
+\vspace{0.15in}
+
+My biggest error was relying entirely on Jupyter notebook shortcuts and local environmental assumptions.
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.45\textwidth}
+    {\large\color{brandred}\textbf{What I Did}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandred}\textbullet}]
+        \item Used implicit library defaults in standard Pandas/NumPy setups.
+        \item Tested end-to-end flows manually in cells.
+        \item Kept training and serving logic separate.
+    \end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+
+    {\large\color{brandgreen}\textbf{What I Should Have Done}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.1in, label={\color{brandgreen}\textbullet}]
+        \item Enforced strict parity between training and serving.
+        \item Pinned all random seeds and default parameters explicitly.
+        \item Unified the preprocessing logic.
+    \end{itemize}
+
+\end{minipage}
+
+\vspace{0.3in}
+
+\begin{darkbox}
+
+{\large\textbf{The Reality Check}}
+
+\vspace{0.05in}
+
+When it hit production, it silently failed. 
+
+The app returned garbage predictions for a subset of users, costing us hours of frantic debugging and creating a massive spike in our GPU billing.
+
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 4: HOW IT SHOWED UP
+% ==========================================================
+
+\section*{How It Manifested}
+
+\vspace{0.15in}
+
+The model didn't crash, it did something much worse. It produced silent errors that looked mathematically valid but were entirely wrong in context.
+
+\vspace{0.15in}
+
+\begin{infobox}[top=10pt, bottom=10pt, left=15pt, right=15pt]
+{\large\color{brandblue}\textbf{1. Shifting Feature Distributions}}
+
+\vspace{0.05in}
+In production, feature normalization ended up utilizing a completely different code path. The default handler for missing values differed, instantly shifting the distributions of the incoming data.
+
+\vspace{0.05in}
+{\small\color{brandgray}\textit{Example: Training used \texttt{fillna(mean)} $\rightarrow$ [2,4,6] normalized (subtract mean, divide by std) to [-1,0,1]. Serving used \texttt{fillna(0)} $\rightarrow$ [2,0,6] normalized to [-0.27,-1.07,1.34]. Same formula, different input geometry.}}
+\end{infobox}
+
+\vspace{0.1in}
+
+\begin{infobox}[top=10pt, bottom=10pt, left=15pt, right=15pt]
+{\large\color{brandblue}\textbf{2. Silent Precision Differences}}
+
+\vspace{0.05in}
+Production batch sizes and data sharding drastically changed runtime memory behavior. Under mixed precision, this caused silent numerical precision differences that altered outputs.
+
+\vspace{0.05in}
+{\small\color{brandgray}\textit{Example: FP32 computes 0.1 + 0.2 = 0.30000000000000004 (above threshold 0.3). FP16 stores 0.1 $\approx$ 0.0996 and 0.2 $\approx$ 0.2002, sum = 0.2998 (below threshold). The decision flips silently.}}
+\end{infobox}
+
+\vspace{0.1in}
+
+\begin{infobox}[top=10pt, bottom=10pt, left=15pt, right=15pt]
+{\large\color{brandblue}\textbf{3. Inconsistent Warmups}}
+
+\vspace{0.05in}
+Checkpoint restores in the serving environment loaded a different optimizer state. The model produced highly inconsistent predictions immediately following the warmup phase.
+
+\vspace{0.05in}
+{\small\color{brandgray}\textit{Example: Serving restored only model weights, not optimizer buffers. First inference calls used zero momentum $\rightarrow$ predictions deviated until internal state stabilized.}}
+\end{infobox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 5: ROOT CAUSES
+% ==========================================================
+\section*{Root Cause Analysis}
+
+\vspace{0.05in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+A failure of this magnitude is rarely a single bug. It is a compounding of technical and process flaws.
+}
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Technical Causes}}
+
+\vspace{0.1in}
+\begin{itemize}[leftmargin=*, itemsep=0.15in, label={\color{brandblue}\textbullet}]
+    \item \textbf{Path Mismatch:} Preprocessing pipelines differed between the training script and the serving API.
+    \item \textbf{Hidden Defaults:} Underlying libraries behaved differently across OS and container environments.
+    \item \textbf{Untested Scale:} Mixed precision and checkpointing were never tested end-to-end against production-sized batches.
+\end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Process Causes}}
+
+\vspace{0.1in}
+\begin{itemize}[leftmargin=*, itemsep=0.15in, label={\color{brandblue}\textbullet}]
+    \item \textbf{No Staging:} Lacked an environment that mirrored the exact data throughput of production.
+    \item \textbf{No Assertions:} Missing unit tests verifying preprocessing parity between raw data and tensors.
+    \item \textbf{Notebook Reliance:} Overreliance on interactive experiments without locking in reproducible artifacts.
+\end{itemize}
+
+\end{minipage}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 6: WHAT I CHANGED
+% ==========================================================
+
+\section*{What I Changed}
+
+\vspace{0.1in}
+
+I implemented three practical changes that stopped these silent failures and completely prevented future regressions.
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{1. Enforce Preprocessing Parity}
+
+Move preprocessing into a single, versioned library used by \textit{both} training and serving. Add unit tests that assert identical outputs for the same raw input dictionaries.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{2. Staging that Mirrors Production}
+
+Run automated staging jobs with production-like batch sizes and mixed precision explicitly enabled. Validate checkpoint restores and inference warmups under identical memory constraints.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{3. CI and Instrumentation}
+
+Add Continuous Integration checks that run a tiny end-to-end cycle: \texttt{train $\rightarrow$ checkpoint $\rightarrow$ serve}. Add active monitors for feature distribution drift in production.
+\end{darkbox}
+
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 7: THE IMPLEMENTATION
+% ==========================================================
+
+\section*{The Implementation}
+
+\vspace{0.1in}
+
+These changes turned a one-off panic fix into a repeatable, scalable process that catches parity issues before they ever reach a user.
+
+\vspace{0.15in}
+
+\textbf{1. Asserting Preprocessing Parity (Python)}
+
+\begin{codebox}{Python}
+# test_preprocessing_parity.py
+import json
+from my_preproc import preprocess_train, preprocess_serve
+
+sample_raw = {
+    "text": "Example input",
+    "num_feature": None,
+    "cat_feature": "A"
+}
+
+train_out = preprocess_train(sample_raw)
+serve_out = preprocess_serve(sample_raw)
+
+assert train_out == serve_out, f"Mismatch {train_out} != {serve_out}"
+print("Preprocessing parity OK")
+\end{codebox}
+
+\vspace{0.15in}
+
+\textbf{2. Mirroring Production in Staging (Bash)}
+
+\begin{codebox}{bash}
+# run_staging.sh
+python train.py --config configs/production_like.yaml \
+    --batch-size 256 --mixed-precision true --max-steps 100
+
+python serve.py --checkpoint checkpoints/latest.pt \
+    --batch-size 256 --warmup-steps 50
+\end{codebox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 7: THE BIG TAKEAWAY
+% ==========================================================
+
+\vspace*{0.35in}
+
+\begin{center}
+
+{\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE MLOPS TAKEAWAY}}
+
+\vspace{0.3in}
+
+\begin{minipage}{0.88\textwidth}
+\centering
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.2in}
+
+{\fontsize{24}{28}\selectfont\bfseries\color{brandnavy}
+Production parity beats\\
+perfect notebook metrics.
+}
+
+\vspace{0.15in}
+
+{\fontsize{12}{14}\selectfont\color{brandgray}
+If your training and serving environments are not identical in preprocessing, defaults, and runtime behavior, your notebook wins and your users lose. 
+
+\vspace{0.1in}
+Ship reproducible pipelines, run small staging jobs that mirror production, and automate your parity checks.
+}
+
+\vspace{0.2in}
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.3in}
+
+{\fontsize{14}{16}\selectfont\bfseries\color{brandnavy}
+What is your worst notebook-to-production surprise?
+}
+
+\end{minipage}
+
+\end{center}
+
+\vfill
+
+% Full footer
+\begin{center}
+
+\rule{0.6\textwidth}{0.5pt}
+
+\vspace{0.12in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Building AI systems by understanding the mathematics,\\
+engineering, and intuition behind every architecture.
+}
+
+\vspace{0.12in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+\begin{tabular}{@{}l l}
+GitHub: & \texttt{github.com/MrHeaven1y} \\
+Portfolio: & \texttt{mrheaven1y.github.io} \\
+LinkedIn: & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+\end{tabular}
+}
+
+\vspace{0.12in}
+
+{\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.2in}
+
+\newpage
+
+% ==========================================================
+% SLIDE 8: COMING UP NEXT
+% ==========================================================
+
+\vspace*{0.5in}
+
+\begin{center}
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{COMING UP NEXT...}}
+    
+    \vspace{0.4in}
+    
+    {\fontsize{32}{38}\selectfont\color{brandnavy}\bfseries
+    Why Your Training Loss Looks Great\\[0.15in]
+    but Your Model Still Fails in Production
+    }
+    
+    \vspace{0.4in}
+    
+    \begin{minipage}{0.7\textwidth}
+        \centering
+        \color{brandgray}\fontsize{14}{18}\selectfont
+        Evaluation gaps, data leakage, and the silent drift\\
+        between validation and reality.
+    \end{minipage}
+\end{center}
+
+\vfill
+
+\begin{center}
+    \rule{0.6\textwidth}{0.5pt}
+    
+    \vspace{0.15in}
+    
+    {\fontsize{11}{13}\selectfont\color{brandgray}
+    More production-grade MLOps deep dives coming soon.
+    }
+    
+    \vspace{0.12in}
+    
+    {\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+\end{center}
+
+\vspace*{0.2in}
+
+\newpage

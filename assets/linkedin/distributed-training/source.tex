@@ -1,0 +1,714 @@
+\documentclass[11pt]{article}
+
+% Set 4:5 Aspect Ratio (Standard LinkedIn Portrait Carousel 1080x1350 equivalent)
+\usepackage[paperwidth=8in, paperheight=10in, top=1.2in, bottom=1.2in, left=1in, right=1in]{geometry}
+
+\usepackage{fontspec}
+\usepackage[english, bidi=bidi, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set premium typography using Noto Sans system fonts
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans}
+\babelfont{tt}{Noto Sans Mono}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows.blur}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+\definecolor{brandnavy}{HTML}{0A2540}    % Deep Primary Navy
+\definecolor{brandgray}{HTML}{425466}    % Slate Gray
+\definecolor{brandlight}{HTML}{F8F9FA}   % Light Soft Gray
+\definecolor{brandblue}{HTML}{635BFF}    % Accent Classic Blue
+\definecolor{brandgreen}{HTML}{00D4B2}   % Success/Muted Green
+\definecolor{brandorange}{HTML}{F25C05}  % Accent Orange
+\definecolor{brandred}{HTML}{E5484D}     % Warning Red
+
+% Premium Dark Theme for Code Blocks
+\definecolor{codebackground}{HTML}{141419}
+\definecolor{codekeyword}{HTML}{FF7B72}
+\definecolor{codestring}{HTML}{A5D6FF}
+\definecolor{codecomment}{HTML}{8B949E}
+\definecolor{codetext}{HTML}{E6EDF3}
+\definecolor{codeframe}{HTML}{30363D}
+
+% --- ZERO PARAGRAPH INDENT ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+\newtcolorbox{infobox}[1][]{
+    colback=brandlight, colframe=brandblue, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, #1
+}
+
+\newtcolorbox{darkbox}[1][]{
+    colback=brandnavy, colframe=brandnavy, arc=5pt, boxrule=0.8pt,
+    left=15pt, right=15pt, top=12pt, bottom=12pt, 
+    coltext=white, #1
+}
+
+% Custom TColorBox for Syntax Highlighted Code
+\newtcblisting{codebox}[2][]{
+    colback=codebackground, colframe=codeframe, arc=5pt, boxrule=1pt,
+    left=10pt, right=10pt, top=10pt, bottom=10pt,
+    listing only, listing options={
+        basicstyle=\ttfamily\footnotesize\color{codetext},
+        keywordstyle=\color{codekeyword}\bfseries,
+        stringstyle=\color{codestring},
+        commentstyle=\color{codecomment}\itshape,
+        showstringspaces=false,
+        breaklines=true,
+        language=#2
+    },
+    #1
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancyhead[L]{\fontsize{9}{11}\selectfont\color{brandgray}\MakeUppercase{MLOps Deep Dive}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont\color{brandblue}\textbf{DISTRIBUTED TRAINING}}
+
+\fancyfoot[L]{\fontsize{8}{10}\selectfont\color{brandgray}
+Author: Dibayendu Mukherjee \hspace{0.7em}$\cdot$\hspace{0.7em}
+\mbox{AI Research Engineer \hspace{0.7em}\textbullet\hspace{0.7em} Systems Engineer}}
+
+\fancyfoot[R]{\fontsize{8}{10}\selectfont\color{brandgray}Slide \thepage}
+
+\begin{document}
+
+% ==========================================================
+% SLIDE 1: COVER
+% ==========================================================
+\thispagestyle{empty}
+\vspace*{0.3in}
+
+\begin{center}
+
+    {\fontsize{14}{16}\selectfont\color{brandblue}\textbf{
+    DISTRIBUTED TRAINING
+    }}
+
+    \vspace{0.4in}
+
+    {\fontsize{36}{44}\selectfont\color{brandnavy}\bfseries
+What Actually Breaks\\[0.15in]
+When You Scale Training\\[0.15in]
+Across Multiple GPUs
+}
+
+    \vspace{0.5in}
+
+    {\fontsize{18}{24}\selectfont\color{brandgray}
+        Duplicate data across GPUs, misplaced gradient accumulation,\\
+        and BF16 underflow that never throw an exception.
+        }
+
+    \vfill
+
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        \rule{0.6\linewidth}{0.5pt}
+
+        \vspace{0.2in}
+
+        {\fontsize{12}{14}\selectfont\color{brandnavy}
+        \textbf{Dibayendu Mukherjee}
+        }
+
+        \vspace{0.05in}
+
+        {\fontsize{10}{12}\selectfont\color{brandgray}
+        AI Research Engineer \quad $\cdot$ \quad Systems Engineer
+        }
+
+    \end{minipage}
+
+\end{center}
+
+\newpage
+
+% SLIDE 2: THE SETUP
+\vspace*{0.2in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+The Setup}
+\end{center}
+
+\vspace{0.2in}
+
+{\large\color{brandgray}
+Scaling from prototype to production uncovered issues that single‑GPU tests did not surface.
+}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{What I Was Building}}
+
+\vspace{0.05in}
+\begin{itemize}[leftmargin=*, itemsep=0.08in, label={\color{brandblue}\textbullet}]
+    \item A transformer model exceeding single‑GPU memory limits to improve task accuracy and enable larger context windows.
+    \item Multi‑GPU training using PyTorch DistributedDataParallel (DDP).
+    \item Mixed precision (FP16/BF16) to reduce memory and speed up training.
+    \item Gradient accumulation to simulate larger global batch sizes without extra GPU memory.
+\end{itemize}
+\end{darkbox}
+
+\vspace{0.15in}
+
+\textbf{Why I scaled up:} to train a larger model for better accuracy and to shorten experiment turnaround time.
+
+\vspace{0.15in}
+
+The training loop ran on one GPU, but scaling to 4 GPUs introduced subtle, silent failures not seen during single‑GPU prototyping.
+
+\vspace{0.15in}
+
+\begin{infobox}
+\textbf{Key takeaway:}\\
+Scaling hardware changes numerical and synchronization behavior — more GPUs do not equal faster results without additional changes.
+\end{infobox}
+
+
+% ==========================================================
+% SLIDE 3: WHAT WENT WRONG (SILENT ERRORS & FIXES)
+% ==========================================================
+\vspace*{0.2in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+What Actually Went Wrong}
+\end{center}
+
+\vspace{0.2in}
+
+{\large\color{brandgray}
+The code ran, the loss decreased, but after 2k steps the validation loss stalled at 3.1 while the single-GPU baseline hit 2.7. No errors, no NaNs. Three silent bugs caused it.
+}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{Bug \#1: Every GPU Saw the Same Data}}
+
+\vspace{0.05in}
+I forgot to wrap the dataset in \texttt{DistributedSampler}. All 4 GPUs received identical batches, so the model effectively trained on $\frac{1}{4}$ of the intended data diversity per step. This caused overfitting to a narrower distribution and degraded generalization.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{Bug \#2: Gradient Accumulation Done Wrong}}
+
+\vspace{0.05in}
+I called \texttt{optimizer.step()} inside the accumulation loop instead of after 16 micro-batches. This:
+\begin{itemize}[leftmargin=*, itemsep=0.06in, label={\color{brandblue}\textbullet}]
+    \item Triggered gradient all‑reduce 16 times per optimizer step, so communication overhead reduced throughput (observed 2.1× vs expected 3.8×).
+    \item The model never saw the intended global batch of 512; each GPU used batch size 8. I had scaled the learning rate for batch 512 (base LR ×64), but because I stepped every micro-batch, the actual global batch seen by the optimizer was only 32 (4 GPUs × 8). The correct LR for batch 32 would have been base ×4, so my LR was 16× too large, causing unstable updates and a plateaued loss.
+\end{itemize}
+
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+{\large\textbf{Bug \#3: BF16 Underflow without GradScaler}}
+
+\vspace{0.05in}
+Using BF16 autocast, some gradients (especially in the attention output projection) became so small that the 7‑bit mantissa rounded them to zero. These layers stopped learning entirely. No exception was raised; the optimizer simply skipped updating them. I only noticed by printing per-layer gradient norms.
+\end{darkbox}
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.48\textwidth}
+    {\large\color{brandred}\textbf{What I Did (Wrong)}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.06in, label={\color{brandred}\textbullet}]
+        \item Forgot \texttt{DistributedSampler} $\rightarrow$ duplicate data across GPUs.
+        \item Called \texttt{optimizer.step()} every micro-batch $\rightarrow$ broke gradient accumulation and scaled LR incorrectly.
+        \item Used BF16 without \texttt{GradScaler} $\rightarrow$ silent gradient underflow.
+        \item Assumed DDP + mixed precision would handle everything automatically.
+        
+    \end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+    {\large\color{brandgreen}\textbf{What I Fixed}}
+
+    \begin{itemize}[leftmargin=*, itemsep=0.06in, label={\color{brandgreen}\textbullet}]
+        \item Added \texttt{DistributedSampler} with \texttt{shuffle=True} and per-epoch seed.
+        \item Moved \texttt{optimizer.step()} outside the accumulation loop; zeroed gradients once per optimizer step.
+        \item For FP16, used \texttt{torch.cuda.amp.GradScaler}. For BF16, monitored gradient norms and cast sensitive ops (attention output projection) to FP32 to avoid rounding to zero.
+        \item Used linear LR scaling with warmup: \texttt{lr = base\_lr * 64}, then 500-step warmup, and gradient clipping at 1.0.
+    \end{itemize}
+\end{minipage}
+
+\vspace{0.2in}
+
+\begin{darkbox}
+{\large\textbf{Outcome After Fixes}}
+
+\vspace{0.05in}
+Validation loss dropped from \textbf{3.1 $\rightarrow$ 2.72} (within noise of single-GPU 2.7). Throughput improved from \textbf{2.1$×$ $\rightarrow$ 3.5$×$} (88\% of ideal scaling). No crashes, but the difference was night and day — and all three bugs would have been invisible to standard monitoring.
+\end{darkbox}
+
+\vfill
+\newpage
+
+
+% ==========================================================
+% SLIDE 4: WHAT I SAW (THREE SILENT FAILURES — RECAP)
+% ==========================================================
+
+\vspace*{0.1in}
+
+\begin{center}
+{\fontsize{26}{30}\selectfont\color{brandnavy}\bfseries 
+What I Saw: Three Silent Failures}
+\end{center}
+
+\vspace{0.1in}
+
+{\small No crashes. No exceptions. Just three mistakes that quietly wasted 2,000 GPU‑hours and produced a worse model.}
+
+\vspace{0.2in}
+
+% --- FAILURE 1: MISSING DISTRIBUTED SAMPLER ---
+\begin{infobox}[top=5pt, bottom=5pt, left=10pt, right=10pt]
+{\normalsize\color{brandblue}\textbf{1. Every GPU Trained on the Same Data}} \hfill {\footnotesize\color{brandorange}\textit{Duplicate batches.}}
+
+\vspace{0.03in}
+{\footnotesize\textbf{Punchline:} Forgot \texttt{DistributedSampler}, so all 4 GPUs saw identical mini‑batches. The model saw only $\frac{1}{4}$ of the data diversity per step and overfit.}
+
+\vspace{0.02in}
+{\footnotesize\color{brandgray}\textit{Symptom: Validation loss plateaued at 3.1 vs single‑GPU 2.7 after 2k steps.}}
+
+\vspace{0.02in}
+{\footnotesize\color{brandred}\textbf{Human oversight:} Always wrap the dataset in \texttt{DistributedSampler} with \texttt{shuffle=True}.}
+\end{infobox}
+
+\vspace{0.15in}
+
+% --- FAILURE 2: GRADIENT ACCUMULATION MISPLACED ---
+\begin{infobox}[top=5pt, bottom=5pt, left=10pt, right=10pt]
+{\normalsize\color{brandblue}\textbf{2. Gradient Accumulation Called in the Wrong Place}} \hfill {\footnotesize\color{brandorange}\textit{Extra syncs.}}
+
+\vspace{0.03in}
+{\footnotesize\textbf{Punchline:} Called \texttt{optimizer.step()} inside the accumulation loop, causing 16 gradient all‑reduces per optimizer step instead of one. Throughput collapsed from 3.8× to 2.1×.}
+
+\vspace{0.02in}
+{\footnotesize\color{brandgray}\textit{Symptom: Communication overhead dominated, and the model never actually trained with global batch 512 — only per‑GPU batch 8.}}
+
+\vspace{0.02in}
+{\footnotesize\color{brandred}\textbf{Human oversight:} Place \texttt{optimizer.step()} after the accumulation loop, and zero gradients once per optimizer step.}
+\end{infobox}
+
+\vspace{0.15in}
+
+% --- FAILURE 3: BF16 UNDERFLOW WITHOUT GRADSCALER ---
+\begin{infobox}[top=5pt, bottom=5pt, left=10pt, right=10pt]
+{\normalsize\color{brandblue}\textbf{3. Mixed Precision Silently Killed Gradients}} \hfill {\footnotesize\color{brandorange}\textit{Precision loss.}}
+
+{\footnotesize\textbf{Punchline:} BF16 autocast rounded small gradients in attention projection layers to zero. Those layers stopped learning, but no error was raised.}
+
+\vspace{0.02in}
+{\footnotesize\color{brandgray}\textit{Symptom: Per‑layer gradient norms printed as exactly 0.0 after step 500.}}
+
+\vspace{0.02in}
+{\footnotesize\color{brandred}\textbf{Human oversight:} Use \texttt{GradScaler} for FP16, or monitor gradient norms and cast sensitive ops to FP32 for BF16.}
+\end{infobox}
+
+\vspace{0.2in}
+
+% --- CLOSING KICKER ---
+\begin{darkbox}[top=5pt, bottom=5pt, left=10pt, right=10pt]
+{\normalsize\textbf{The Real Danger}}
+
+\vspace{0.03in}
+{\footnotesize Distributed training doesn't break loudly — it silently wastes compute and produces inferior models. Only human intuition, explicit checks, and rigorous process controls can catch these failures before they burn your budget.}
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 5: WHY IT HAPPENED
+% ==========================================================
+\section*{Why It Happened}
+
+\vspace{0.05in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Three specific oversights compounded into a silently degraded model. None of them raised an exception.
+}
+
+\vspace{0.2in}
+
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Technical Causes}}
+
+\vspace{0.1in}
+\begin{itemize}[leftmargin=*, itemsep=0.12in, label={\color{brandblue}\textbullet}]
+    \item \textbf{Forgot \texttt{DistributedSampler}} $\rightarrow$ all GPUs received identical batches, reducing effective data diversity by 4×.
+    \item \textbf{Called \texttt{optimizer.step()} inside the accumulation loop} $\rightarrow$ 16 gradient all-reduces per optimizer step instead of one, plus the model never saw global batch 512.
+    \item \textbf{Used BF16 without \texttt{GradScaler}} $\rightarrow$ gradients in attention projection underflowed to zero, silently freezing those layers.
+\end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+
+{\large\color{brandorange}\textbf{Process Causes}}
+
+\vspace{0.1in}
+\begin{itemize}[leftmargin=*, itemsep=0.12in, label={\color{brandblue}\textbullet}]
+    \item \textbf{No per-layer gradient monitoring} $\rightarrow$ zeroed gradients went unnoticed until loss plateaued.
+    \item \textbf{No throughput benchmark} $\rightarrow$ 2.1× scaling was accepted without questioning the missing 3.8× target.
+    \item \textbf{No distributed dry-run} $\rightarrow$ data distribution and accumulation logic were never validated on 2 GPUs before scaling to 4.
+    \item \textbf{Assumed DDP + mixed precision handle everything} $\rightarrow$ skipped reading the documentation on sampler and scaler requirements.
+\end{itemize}
+
+\end{minipage}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 6: HOW I FIXED IT
+% ==========================================================
+
+\section*{How I Fixed It}
+
+\vspace{0.1in}
+
+Three targeted fixes addressed the exact bugs — no generic checklist, just the specific changes that recovered performance.
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{1. Added \texttt{DistributedSampler} to the DataLoader}
+
+Each GPU now receives a unique, shuffled subset of the dataset per epoch. This restored full data diversity per global step and eliminated the overfitting caused by duplicate batches.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{2. Moved \texttt{optimizer.step()} Outside the Accumulation Loop}
+
+Gradients now accumulate across 16 micro-batches before a single all-reduce and optimizer step. This reduced communication overhead by 16× and let the model actually train with global batch 512.
+\end{darkbox}
+
+\vspace{0.15in}
+
+\begin{darkbox}
+\textbf{3. Added \texttt{GradScaler} and Gradient Norm Monitoring}
+
+For FP16, \texttt{GradScaler} prevents small gradients from underflowing. For BF16, I monitored per-layer gradient norms and cast sensitive ops (attention output projection) to FP32 to prevent rounding to zero.
+\end{darkbox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 7: HOW I IMPLEMENTED IT
+% ==========================================================
+
+\section*{How I Implemented It}
+
+\vspace{0.05in}
+
+These code snippets show the exact fixes for the three silent bugs.
+
+
+\vspace{0.05in}
+
+\textbf{1. DistributedSampler + DataLoader (Python)}
+
+\begin{codebox}{Python}
+from torch.utils.data import DataLoader, DistributedSampler
+
+sampler = DistributedSampler(
+    dataset,
+    num_replicas=world_size,
+    rank=local_rank,
+    shuffle=True,
+    seed=42
+)
+
+loader = DataLoader(
+    dataset,
+    batch_size=8,
+    sampler=sampler,
+    num_workers=4,
+    pin_memory=True
+)
+
+# Call this at the start of every epoch
+sampler.set_epoch(epoch)
+\end{codebox}
+
+\vspace{0.05in}
+
+\newpage
+\textbf{2. Correct Gradient Accumulation Loop for BF16 (no scaler)}
+
+\begin{codebox}{Python}
+# Correct gradient accumulation loop (BF16, no scaler needed)
+optimizer.zero_grad()
+for step, batch in enumerate(loader):
+    with torch.cuda.amp.autocast(dtype=torch.bfloat16):
+        loss = model(batch)
+        loss = loss / 16  # Normalize for accumulation
+
+    loss.backward()  # No scaler for BF16
+
+    if (step + 1) % 16 == 0:
+        optimizer.step()
+        optimizer.zero_grad()
+\end{codebox}
+
+\vspace{0.08in}
+
+\textbf{3. FP16 with GradScaler (and gradient monitoring)}
+
+\begin{codebox}{Python}
+# If using FP16 instead of BF16, use GradScaler
+scaler = torch.cuda.amp.GradScaler()
+
+optimizer.zero_grad()
+for step, batch in enumerate(loader):
+    with torch.cuda.amp.autocast(dtype=torch.float16):
+        loss = model(batch)
+        loss = loss / 16
+
+    scaler.scale(loss).backward()
+
+    if (step + 1) % 16 == 0:
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad()
+
+# Monitor gradient norms (works for both BF16 and FP16)
+for name, param in model.named_parameters():
+    if param.grad is not None:
+        grad_norm = param.grad.norm().item()
+        if grad_norm == 0.0:
+            print(f"WARNING: Zero gradient at {name}")
+\end{codebox}
+
+\vfill
+\newpage
+
+% ==========================================================
+% SLIDE 8: THE BIG TAKEAWAY
+% ==========================================================
+
+\vspace*{0.35in}
+
+\begin{center}
+
+{\fontsize{14}{16}\selectfont\color{brandblue}\textbf{THE MLOPS TAKEAWAY}}
+
+\vspace{0.3in}
+
+\begin{minipage}{0.88\textwidth}
+\centering
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.2in}
+
+{\fontsize{24}{28}\selectfont\bfseries\color{brandnavy}
+Scale the system,\\
+not just the model.
+}
+
+\vspace{0.15in}
+
+{\fontsize{12}{14}\selectfont\color{brandgray}
+Multi-GPU training isn't a hardware upgrade — it's a systems engineering problem. Gradient sync, memory, and learning rates all interact in ways that silently degrade training.
+
+\vspace{0.1in}
+If you don't think in systems, more GPUs just mean more expensive failures.
+}
+
+\vspace{0.2in}
+
+{\color{brandblue}\rule{6cm}{1pt}}
+
+\vspace{0.3in}
+
+{\fontsize{14}{16}\selectfont\bfseries\color{brandnavy}
+What's the most surprising thing that broke\\
+when you scaled your training?
+}
+
+\end{minipage}
+
+\end{center}
+
+\vfill
+
+% Full footer
+\begin{center}
+
+\rule{0.6\textwidth}{0.5pt}
+
+\vspace{0.12in}
+
+{\fontsize{11}{13}\selectfont\color{brandgray}
+Building AI systems by understanding the mathematics,\\
+engineering, and intuition behind every architecture.
+}
+
+\vspace{0.12in}
+
+{\fontsize{10}{12}\selectfont\color{brandgray}
+\begin{tabular}{@{}l l}
+GitHub: & \texttt{github.com/MrHeaven1y} \\
+Portfolio: & \texttt{mrheaven1y.github.io} \\
+LinkedIn: & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+\end{tabular}
+}
+
+\vspace{0.12in}
+
+{\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+\end{center}
+
+\vspace*{0.2in}
+
+\newpage
+
+% ==========================================================
+% SLIDE 9: SERIES RECAP
+% ==========================================================
+
+\thispagestyle{empty}
+\vspace*{0.1in}
+
+\begin{center}
+
+{\fontsize{12}{14}\selectfont\color{brandblue}\textbf{THE SERIES JOURNEY}}
+
+\vspace{0.1in}
+
+{\fontsize{28}{32}\selectfont\color{brandnavy}\bfseries From Notebook to Distributed Systems}
+
+\end{center}
+
+\vspace{0.15in}
+
+\begin{darkbox}[top=8pt, bottom=8pt]
+{\small\color{brandblue}\textbf{POST 1: PREPROCESSING PARITY}} \\
+{\normalsize\textbf{``Silent failures happen when training and serving differ.''}} \\
+{\footnotesize\color{brandlight!80}Data leakage and pipeline mismatches between training and inference ruin real-world accuracy.}
+\end{darkbox}
+
+\vspace{0.08in}
+
+\begin{darkbox}[top=8pt, bottom=8pt]
+{\small\color{brandblue}\textbf{POST 2: VALIDATION DRIFT \& EVALUATION GAPS}} \\
+{\normalsize\textbf{``Great metrics mean nothing if your validation set lies.''}} \\
+{\footnotesize\color{brandlight!80}Random splits, wrong business metrics, and unmonitored drift create an illusion of model quality.}
+\end{darkbox}
+
+\vspace{0.08in}
+
+\begin{darkbox}[top=8pt, bottom=8pt]
+{\small\color{brandblue}\textbf{POST 3: MULTI-GPU TRAINING FAILURES}} \\
+{\normalsize\textbf{``More GPUs make failures quieter, not louder.''}} \\
+{\footnotesize\color{brandlight!80}Duplicate data across GPUs, misplaced gradient accumulation, and BF16 underflow silently degrade training.}
+\end{darkbox}
+
+\vspace{0.12in}
+
+\begin{center}
+{\fontsize{11}{13}\selectfont\color{brandgray}
+\textbf{The pattern across all three:} AI doesn't crash — it convinces you it's right.\\
+Human guardrails at every stage are the only defense.
+}
+\end{center}
+
+\vfill
+
+\begin{center}
+\rule{0.6\textwidth}{0.5pt}
+
+\vspace{0.08in}
+
+{\fontsize{12}{14}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}} \\
+{\fontsize{9}{11}\selectfont\color{brandgray}AI Research Engineer \quad $\cdot$ \quad Systems Engineer}
+\end{center}
+
+\newpage
+
+% ==========================================================
+% SLIDE 10: CLOSING / CTA
+% ==========================================================
+
+\thispagestyle{empty}
+\vspace*{0.8in}
+
+\begin{center}
+
+    {\fontsize{32}{38}\selectfont\color{brandnavy}\bfseries
+    Thanks for following\\[0.15in]
+    the series.
+    }
+
+    \vspace{0.4in}
+
+    {\fontsize{16}{22}\selectfont\color{brandgray}
+    If these deep dives resonated, let's connect\\
+    and build better systems together.
+    }
+
+    \vspace{0.6in}
+
+    \begin{infobox}[top=15pt, bottom=15pt, left=20pt, right=20pt]
+    \centering
+    {\fontsize{11}{14}\selectfont\color{brandnavy}
+    \begin{tabular}{@{}r l@{}}
+    \textbf{GitHub:} & \texttt{github.com/MrHeaven1y} \\[0.08in]
+    \textbf{Portfolio:} & \texttt{mrheaven1y.github.io} \\[0.08in]
+    \textbf{LinkedIn:} & \texttt{linkedin.com/in/dibayendu-mukherjee-bb897b267}
+    \end{tabular}
+    }
+    \end{infobox}
+
+    \vfill
+
+    \rule{0.6\linewidth}{0.5pt}
+
+    \vspace{0.2in}
+
+    {\fontsize{14}{16}\selectfont\color{brandnavy}\textbf{Dibayendu Mukherjee}}
+
+    \vspace{0.05in}
+
+    {\fontsize{11}{13}\selectfont\color{brandgray}
+    AI Research Engineer \& Systems Engineer
+    }
+
+    \vspace*{0.3in}
+
+\end{center}
+
+\end{document}
