@@ -13,4 +13,11 @@
     });
     empty.hidden = visible !== 0;
   });
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && input.value) {
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+    }
+  });
 })();

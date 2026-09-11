@@ -19,6 +19,8 @@
 .content-hero h1 { max-width:800px; margin:.8rem 0 1.2rem; }
 .content-lede { max-width:620px; color:var(--soft); font-size:1.05rem; line-height:1.7; }
 .content-search { width:min(100%, 520px); margin-top:2rem; }
+.search-icon { color:var(--copper); font-size:1.1rem; line-height:1; }
+.search-hint { margin-top:.6rem; color:var(--soft); font-family:var(--mono); font-size:.58rem; letter-spacing:.04em; }
 .topic-nav { display:flex; flex-wrap:wrap; gap:.55rem; margin-bottom:4rem; }
 .topic-nav a { padding:.55rem .75rem; border:1px solid var(--line); color:var(--soft); font-family:var(--mono); font-size:.62rem; text-transform:uppercase; }
 .topic-nav a:hover { border-color:var(--copper); color:var(--copper); }
