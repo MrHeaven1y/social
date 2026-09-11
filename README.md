@@ -46,3 +46,7 @@ The build emits `/linkedin/`, topic archives under `/tags/`, paginated archives 
 ## Deployment
 
 The site is dependency-free and deploys through GitHub Pages using `.github/workflows/deploy.yml`. The workflow builds content before deploy. If Pages is not enabled, set **Settings → Pages → Source** to **GitHub Actions** once, then rerun the workflow.
+
+## Next-agent context
+
+For the complete current architecture, folder map, source/output rules, visual behavior, deployment flow, known boundaries, and continuation checklist, read [`HANDOFF.md`](HANDOFF.md) before making changes. [`PROJECT_STATE.md`](PROJECT_STATE.md) remains the concise project-state summary.

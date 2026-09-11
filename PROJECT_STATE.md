@@ -46,3 +46,7 @@ The home page uses dual-hit platform cards: the card body opens a local route wh
 2. Preserve the existing visual language: paper, espresso, copper, editorial typography, and restrained spacing.
 3. Keep future social links disabled/reserved until their real public URLs are provided.
 4. Update this file when a branch, contact route, or deployment convention changes.
+
+## Detailed handoff
+
+For the complete folder tree, current implementation/deployment state, source content model, generated-output rules, visual details, search behavior, scrollbar implementation, known repository boundaries, and safe continuation checklist, read [`HANDOFF.md`](HANDOFF.md).
