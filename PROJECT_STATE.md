@@ -2,15 +2,15 @@
 
 ## Purpose
 
-`MrHeaven1y.social` is the single dependency-free social hub for Dibyendu Mukherjee's public work and publishing. The former Field Notes site is consolidated into the LinkedIn category here — one content source, one build, one deploy.
+`MrHeaven1y.social` is the single dependency-free social hub for Dibyendu Mukherjee's public work and publishing. LinkedIn notes have one home here — one content source, one build, one deploy.
 
-The repository is independent from the portfolio and deploys at `https://mrheaven1y.github.io/social/`. Canonical LinkedIn notes now live here as the LinkedIn / Field Notes category.
+The repository is independent from the portfolio and deploys at `https://mrheaven1y.github.io/social/`. Canonical LinkedIn notes now live here as one focused archive.
 
 ## Branch map
 
 - Portfolio: `https://mrheaven1y.github.io/`
 - Social hub: `https://mrheaven1y.github.io/social/`
-- LinkedIn / Field Notes: `https://mrheaven1y.github.io/social/linkedin/`
+- LinkedIn notes: `https://mrheaven1y.github.io/social/linkedin/`
 - LinkedIn profile: `https://www.linkedin.com/in/dibayendu-mukherjee-bb897b267`
 - X / Twitter: reserved for a future public profile
 - Medium: reserved for future publishing
@@ -38,7 +38,7 @@ The repository is independent from the portfolio and deploys at `https://mrheave
 
 `.github/workflows/deploy.yml` validates, builds, and deploys the repository root through GitHub Pages on pushes to `main`.
 
-The home page uses dual-hit platform cards: the card body opens a local route while the small external-link control opens the real platform. LinkedIn and Field Notes are one category at `/linkedin/`; content is sourced from `content/linkedin/` with assets in `assets/linkedin/`.
+The home page uses dual-hit platform cards: the card body opens a local route while the small external-link control opens the real platform. LinkedIn notes live at `/linkedin/`; content is sourced from `content/linkedin/` with assets in `assets/linkedin/`.
 
 ## Continuation rules
 

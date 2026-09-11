@@ -75,7 +75,7 @@ for (const entry of entries.filter((item) => item.isFile() && item.name.endsWith
   const slug = entry.name.slice(0, -3);
   const metadata = parseFrontmatter(await readFile(resolve(contentRoot, entry.name), "utf8"));
   const articlePath = resolve(assetsRoot, slug, "article.html");
-  const article = await readFile(articlePath, "utf8");
+  const article = (await readFile(articlePath, "utf8")).replaceAll(/field notes/gi, "LinkedIn notes");
   posts.push({ slug, ...metadata, topics: Array.isArray(metadata.topics) ? metadata.topics : [], article });
 }
 posts.sort((a, b) => String(b.date).localeCompare(String(a.date)) || a.title.localeCompare(b.title));
@@ -87,7 +87,7 @@ const topicSections = topics.map((topic) => {
 }).join("");
 
 await mkdir(resolve(root, "linkedin"), { recursive: true });
-await writeFile(resolve(root, "linkedin", "index.html"), shell("LinkedIn notes", "Field Notes are the long-form LinkedIn notes archive.", `<main class="content-main"><section class="content-hero"><p class="eyebrow"><span></span> LinkedIn / Field Notes</p><h1>Ideas worth <em>staying with.</em></h1><p class="content-lede">The LinkedIn notes archive: one content source, grouped by topic, with the original decks and sources where available.</p><label class="search-field content-search" for="note-search"><span class="sr-only">Search LinkedIn notes</span><span class="search-icon" aria-hidden="true">⌕</span><input id="note-search" type="search" placeholder="Search notes, topics, and summaries" autocomplete="off" /></label><p class="search-hint">Press Escape to clear your search.</p></section><div class="topic-nav">${topics.map((topic) => `<a href="#${topic}">${escape(titleCase(topic))}</a>`).join("")}</div>${topicSections}<p class="empty-state" id="no-results" hidden>No notes match that search. Try a broader term.</p></main>`, { stylesheet: "../assets/site.css", script: "../assets/search.js", homeLink: "../", linkedinLink: "./", branchesLink: "../#platforms" }));
+await writeFile(resolve(root, "linkedin", "index.html"), shell("LinkedIn notes", "The long-form LinkedIn notes archive.", `<main class="content-main"><section class="content-hero"><p class="eyebrow"><span></span> LinkedIn notes</p><h1>Ideas worth <em>staying with.</em></h1><p class="content-lede">The LinkedIn notes archive: one content source, grouped by topic, with the original decks and sources where available.</p><label class="search-field content-search" for="note-search"><span class="sr-only">Search LinkedIn notes</span><span class="search-icon" aria-hidden="true">⌕</span><input id="note-search" type="search" placeholder="Search notes, topics, and summaries" autocomplete="off" /></label><p class="search-hint">Press Escape to clear your search.</p></section><div class="topic-nav">${topics.map((topic) => `<a href="#${topic}">${escape(titleCase(topic))}</a>`).join("")}</div>${topicSections}<p class="empty-state" id="no-results" hidden>No notes match that search. Try a broader term.</p></main>`, { stylesheet: "../assets/site.css", script: "../assets/search.js", homeLink: "../", linkedinLink: "./", branchesLink: "../#platforms" }));
 
 for (const topic of topics) {
   const matches = posts.filter((post) => post.topics.includes(topic));
@@ -119,7 +119,7 @@ await writeFile(resolve(root, "index.json"), JSON.stringify(index, null, 2) + "\
 
 const lastmod = posts[0]?.date ?? "2026-09-10";
 await writeFile(resolve(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${["", "linkedin/", ...topics.map((topic) => `tags/${topic}/`), ...posts.map((post) => `linkedin/${post.slug}/`)].map((path) => `  <url><loc>${xml(new URL(path, siteUrl).href)}</loc><lastmod>${lastmod}</lastmod></url>`).join("\n")}\n</urlset>\n`);
-await writeFile(resolve(root, "feed.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Dibyendu Mukherjee — LinkedIn Notes</title><link>${siteUrl}linkedin/</link><description>Field Notes published through LinkedIn.</description>${posts.map((post) => `<item><title>${xml(post.title)}</title><link>${xml(new URL(`linkedin/${post.slug}/`, siteUrl).href)}</link><description>${xml(post.summary)}</description><pubDate>${post.date}</pubDate></item>`).join("")}</channel></rss>\n`);
+await writeFile(resolve(root, "feed.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Dibyendu Mukherjee — LinkedIn Notes</title><link>${siteUrl}linkedin/</link><description>LinkedIn notes published by Dibyendu Mukherjee.</description>${posts.map((post) => `<item><title>${xml(post.title)}</title><link>${xml(new URL(`linkedin/${post.slug}/`, siteUrl).href)}</link><description>${xml(post.summary)}</description><pubDate>${post.date}</pubDate></item>`).join("")}</channel></rss>\n`);
 
 const homePath = resolve(root, "index.html");
 const home = await readFile(homePath, "utf8");
