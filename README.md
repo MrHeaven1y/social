@@ -5,8 +5,8 @@ The single static social hub for Dibyendu Mukherjee. LinkedIn is the publishing 
 ## Branch map
 
 - **Portfolio** — live at [mrheaven1y.github.io](https://mrheaven1y.github.io/)
-- **Social hub** — live at [mrheaven1y.github.io/mrheaven1y.social.io](https://mrheaven1y.github.io/mrheaven1y.social.io/)
-- **LinkedIn / Field Notes** — live at [/linkedin](https://mrheaven1y.github.io/mrheaven1y.social.io/linkedin/)
+- **Social hub** — live at [mrheaven1y.github.io/social](https://mrheaven1y.github.io/social/)
+- **LinkedIn / Field Notes** — live at [/linkedin](https://mrheaven1y.github.io/social/linkedin/)
 - **LinkedIn profile** — [Dibyendu Mukherjee](https://www.linkedin.com/in/dibayendu-mukherjee-bb897b267)
 - **X / Twitter** — reserved at `/x/`
 - **Medium** — reserved at `/medium/`

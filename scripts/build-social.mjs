@@ -6,7 +6,7 @@ const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const contentRoot = resolve(root, "content", "linkedin");
 const assetsRoot = resolve(root, "assets", "linkedin");
 const profileUrl = "https://www.linkedin.com/in/dibayendu-mukherjee-bb897b267";
-const siteUrl = "https://mrheaven1y.github.io/mrheaven1y.social.io/";
+const siteUrl = "https://mrheaven1y.github.io/social/";
 
 const ACRONYMS = new Set(["nlp", "ml", "ai", "cv", "gru", "lstm", "llm", "kv"]);
 const escape = (value) => String(value).replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]);

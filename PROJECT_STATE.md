@@ -4,13 +4,13 @@
 
 `MrHeaven1y.social` is the single dependency-free social hub for Dibyendu Mukherjee's public work and publishing. The former Field Notes site is consolidated into the LinkedIn category here — one content source, one build, one deploy.
 
-The repository is independent from the portfolio and deploys at `https://mrheaven1y.github.io/mrheaven1y.social.io/`. Canonical LinkedIn notes now live here as the LinkedIn / Field Notes category.
+The repository is independent from the portfolio and deploys at `https://mrheaven1y.github.io/social/`. Canonical LinkedIn notes now live here as the LinkedIn / Field Notes category.
 
 ## Branch map
 
 - Portfolio: `https://mrheaven1y.github.io/`
-- Social hub: `https://mrheaven1y.github.io/mrheaven1y.social.io/`
-- LinkedIn / Field Notes: `https://mrheaven1y.github.io/mrheaven1y.social.io/linkedin/`
+- Social hub: `https://mrheaven1y.github.io/social/`
+- LinkedIn / Field Notes: `https://mrheaven1y.github.io/social/linkedin/`
 - LinkedIn profile: `https://www.linkedin.com/in/dibayendu-mukherjee-bb897b267`
 - X / Twitter: reserved for a future public profile
 - Medium: reserved for future publishing
