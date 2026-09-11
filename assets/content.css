@@ -9,6 +9,7 @@
 .platform-external:hover { color:var(--ink); background:var(--copper); }
 .platform-card-body { display:flex; flex:1; flex-direction:column; padding:1.2rem; }
 .platform-card-body h3 { margin:auto 0 .7rem; font-size:clamp(2.2rem, 4vw, 4rem); line-height:.9; }
+.platform-name { color:var(--copper); }
 .platform-card-body h3 em { color:var(--copper); font-size:.66em; }
 .platform-card-body p { max-width:430px; margin:0 0 1.2rem; color:var(--soft); line-height:1.6; }
 .platform-stats { color:var(--ink); font-family:var(--mono); font-size:.72rem; letter-spacing:.04em; text-transform:none; }

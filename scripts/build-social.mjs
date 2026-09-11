@@ -52,7 +52,7 @@ function shell(title, description, body, { stylesheet, script = "", homeLink, li
   <body>
     <header class="site-header">
       <a class="wordmark" href="${homeLink}">DM<span>.</span></a>
-      <nav aria-label="Primary navigation"><a href="${linkedinLink}">LinkedIn notes</a><a href="${branchesLink}">Platforms</a></nav>
+      <nav aria-label="Primary navigation"><a href="${linkedinLink}">LinkedIn</a><a href="${branchesLink}">Platforms</a></nav>
       <a class="header-action" href="https://t.me/dibayendu_mukherjee" target="_blank" rel="noopener">Message me ↗</a>
     </header>
     ${body}
@@ -87,12 +87,12 @@ const topicSections = topics.map((topic) => {
 }).join("");
 
 await mkdir(resolve(root, "linkedin"), { recursive: true });
-await writeFile(resolve(root, "linkedin", "index.html"), shell("LinkedIn notes", "The long-form LinkedIn notes archive.", `<main class="content-main"><section class="content-hero"><p class="eyebrow"><span></span> LinkedIn notes</p><h1>Ideas worth <em>staying with.</em></h1><p class="content-lede">The LinkedIn notes archive: one content source, grouped by topic, with the original decks and sources where available.</p><label class="search-field content-search" for="note-search"><span class="sr-only">Search LinkedIn notes</span><span class="search-icon" aria-hidden="true">⌕</span><input id="note-search" type="search" placeholder="Search notes, topics, and summaries" autocomplete="off" /></label><p class="search-hint">Press Escape to clear your search.</p></section><div class="topic-nav">${topics.map((topic) => `<a href="#${topic}">${escape(titleCase(topic))}</a>`).join("")}</div>${topicSections}<p class="empty-state" id="no-results" hidden>No notes match that search. Try a broader term.</p></main>`, { stylesheet: "../assets/site.css", script: "../assets/search.js", homeLink: "../", linkedinLink: "./", branchesLink: "../#platforms" }));
+await writeFile(resolve(root, "linkedin", "index.html"), shell("LinkedIn", "The LinkedIn archive.", `<main class="content-main"><section class="content-hero"><p class="eyebrow"><span></span> LinkedIn</p><h1>Ideas worth <em>staying with.</em></h1><p class="content-lede">A focused archive of the ideas and technical writing shared through LinkedIn, grouped by topic with the original decks and sources where available.</p><label class="search-field content-search" for="note-search"><span class="sr-only">Search LinkedIn</span><span class="search-icon" aria-hidden="true">⌕</span><input id="note-search" type="search" placeholder="Search LinkedIn posts, topics, and summaries" autocomplete="off" /></label><p class="search-hint">Press Escape to clear your search.</p></section><div class="topic-nav">${topics.map((topic) => `<a href="#${topic}">${escape(titleCase(topic))}</a>`).join("")}</div>${topicSections}<p class="empty-state" id="no-results" hidden>No LinkedIn posts match that search. Try a broader term.</p></main>`, { stylesheet: "../assets/site.css", script: "../assets/search.js", homeLink: "../", linkedinLink: "./", branchesLink: "../#platforms" }));
 
 for (const topic of topics) {
   const matches = posts.filter((post) => post.topics.includes(topic));
   await mkdir(resolve(root, "tags", topic), { recursive: true });
-  await writeFile(resolve(root, "tags", topic, "index.html"), shell(`${titleCase(topic)} notes`, `LinkedIn notes tagged ${titleCase(topic)}.`, `<main class="content-main"><section class="content-hero compact"><p class="eyebrow"><span></span> Topic archive</p><h1>${escape(titleCase(topic))} <em>notes.</em></h1><p class="content-lede">${matches.length} notes in this topic.</p></section><div class="content-grid">${matches.map((post) => card(post, "../../linkedin/", "../../tags/")).join("")}</div><a class="branch-back text-link" href="../../linkedin/">← All LinkedIn notes</a></main>`, { stylesheet: "../../assets/site.css", homeLink: "../../", linkedinLink: "../../linkedin/", branchesLink: "../../#platforms" }));
+  await writeFile(resolve(root, "tags", topic, "index.html"), shell(`${titleCase(topic)} — LinkedIn`, `LinkedIn posts tagged ${titleCase(topic)}.`, `<main class="content-main"><section class="content-hero compact"><p class="eyebrow"><span></span> LinkedIn / topic</p><h1>${escape(titleCase(topic))} <em>posts.</em></h1><p class="content-lede">${matches.length} posts in this topic.</p></section><div class="content-grid">${matches.map((post) => card(post, "../../linkedin/", "../../tags/")).join("")}</div><a class="branch-back text-link" href="../../linkedin/">← All LinkedIn</a></main>`, { stylesheet: "../../assets/site.css", homeLink: "../../", linkedinLink: "../../linkedin/", branchesLink: "../../#platforms" }));
 }
 
 const pageSize = 6;
@@ -101,7 +101,7 @@ for (let page = 1; page <= pageCount; page += 1) {
   const slice = posts.slice((page - 1) * pageSize, page * pageSize);
   const directory = resolve(root, "page", String(page));
   await mkdir(directory, { recursive: true });
-  await writeFile(resolve(directory, "index.html"), shell(`LinkedIn notes — page ${page}`, "Paginated LinkedIn notes archive.", `<main class="content-main"><section class="content-hero compact"><p class="eyebrow"><span></span> Page ${page}</p><h1>LinkedIn <em>notes.</em></h1></section><div class="content-grid">${slice.map((post) => card(post, "../../linkedin/", "../../tags/")).join("")}</div><nav class="pagination" aria-label="Notes pages">${page > 1 ? `<a href="../${page - 1}/">← Newer</a>` : ""}${page < pageCount ? `<a href="../${page + 1}/">Older →</a>` : ""}</nav></main>`, { stylesheet: "../../assets/site.css", homeLink: "../../", linkedinLink: "../../linkedin/", branchesLink: "../../#platforms" }));
+  await writeFile(resolve(directory, "index.html"), shell(`LinkedIn — page ${page}`, "Paginated LinkedIn archive.", `<main class="content-main"><section class="content-hero compact"><p class="eyebrow"><span></span> LinkedIn / page ${page}</p><h1>LinkedIn <em>posts.</em></h1></section><div class="content-grid">${slice.map((post) => card(post, "../../linkedin/", "../../tags/")).join("")}</div><nav class="pagination" aria-label="LinkedIn pages">${page > 1 ? `<a href="../${page - 1}/">← Newer</a>` : ""}${page < pageCount ? `<a href="../${page + 1}/">Older →</a>` : ""}</nav></main>`, { stylesheet: "../../assets/site.css", homeLink: "../../", linkedinLink: "../../linkedin/", branchesLink: "../../#platforms" }));
 }
 
 for (const post of posts) {
@@ -110,7 +110,7 @@ for (const post of posts) {
   const assetPrefix = `${relativeAsset(`linkedin/${post.slug}/`, `assets/linkedin/${post.slug}/`)}/`;
   const rewritten = article.replaceAll('href="./post.pdf"', `href="${assetPrefix}post.pdf"`).replaceAll('href="./source.tex"', `href="${assetPrefix}source.tex"`).replaceAll('src="./', `src="${assetPrefix}`);
   await mkdir(directory, { recursive: true });
-  const actions = `<div class="migrated-note-actions"><a class="button button-dark" href="${escape(post.url)}" target="_blank" rel="noopener">Open on LinkedIn ↗</a><a class="button button-outline" href="../">Back to notes</a></div>`;
+  const actions = `<div class="migrated-note-actions"><a class="button button-dark" href="${escape(post.url)}" target="_blank" rel="noopener">Open on LinkedIn ↗</a><a class="button button-outline" href="../">Back to LinkedIn</a></div>`;
   await writeFile(resolve(directory, "index.html"), shell(post.title, post.summary, `<main class="migrated-note"><p class="eyebrow"><span></span> LinkedIn / ${escape(post.topics.map(titleCase).join(" · "))}</p><h1>${escape(post.title)}</h1><p class="migrated-summary">${escape(post.summary)}</p>${actions}<p class="handnote">${escape(post.handnote)}</p>${rewritten}</main>`, { stylesheet: "../../assets/site.css", homeLink: "../../", linkedinLink: "../", branchesLink: "../../#platforms" }));
 }
 
